@@ -1,0 +1,33 @@
+{
+  "name": "dinj",
+  "version": "1.0.0",
+  "description": "Dependency Injection Container",
+  "main": "build/main.js",
+  "scripts": {
+    "build:dev": "webpack --config webpack.config.demo.js --watch",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/guitarino/dinj.git"
+  },
+  "keywords": [
+    "dependency",
+    "injection",
+    "container"
+  ],
+  "author": "Kirill Shestakov",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/guitarino/dinj/issues"
+  },
+  "homepage": "https://github.com/guitarino/dinj#readme",
+  "devDependencies": {
+    "@babel/core": "^7.2.2",
+    "@babel/preset-env": "^7.2.3",
+    "@babel/preset-typescript": "^7.1.0",
+    "babel-loader": "^8.0.5",
+    "webpack": "^4.28.3",
+    "webpack-cli": "^3.2.0"
+  }
+}
