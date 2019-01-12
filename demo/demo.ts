@@ -1,8 +1,9 @@
 import { Container } from "../src/container";
 import { createDecorators } from "../src/ts-decorators";
+import { TSetup } from "../src/types";
 
 const container = new Container();
-const { type, get } = container;
+const { type } = container;
 const { dependency, inject, lazy, multi, singleton, transient } = createDecorators(container);
 
 const IAClass = type(); // 0
@@ -52,12 +53,14 @@ class AClass {
     @inject(IEClass) @multi
     private e: IDClass;
 
-    constructor(setup) {
-        setup(this);
+    constructor(setup?: TSetup) {
+        if (setup) {
+            setup(this);
+        }
         debugger;
     }
 }
 
-get<IAClass>(IAClass);
+const a = new AClass();
 
 debugger;

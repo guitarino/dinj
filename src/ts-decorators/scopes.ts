@@ -1,21 +1,19 @@
-import { TImplementationScope } from "../container";
+import { TImplementationScope } from "../types";
 
 export const SCOPE_NAME = '_dinjScope';
 
-export function createSingletonDecorator() {
-    //return function singleton(): ClassDecorator {
-        return function (Class: any): any {
-            const scope: TImplementationScope = 'singleton';
-            Class[SCOPE_NAME] = scope;
-        }
-    //}
+export function createSingletonDecorator(): ClassDecorator {
+    return function (Class: any): any {
+        const { prototype } = Class;
+        const scope: TImplementationScope = 'singleton';
+        prototype[SCOPE_NAME] = scope;
+    }
 }
 
-export function createTransientDecorator() {
-    //return function transient(): ClassDecorator {
-        return function (Class: any): any {
-            const scope: TImplementationScope = 'transient';
-            Class[SCOPE_NAME] = scope;
-        }
-    //}
+export function createTransientDecorator(): ClassDecorator {
+    return function (Class: any): any {
+        const { prototype } = Class;
+        const scope: TImplementationScope = 'transient';
+        prototype[SCOPE_NAME] = scope;
+    }
 }

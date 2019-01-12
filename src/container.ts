@@ -1,67 +1,30 @@
-export type TypeIdentifierMap = {
-    [id: string]: string[];
-};
+import {
+    TypeIdentifierMap,
+    TImplementationMap,
+    TImplementationScopes,
+    TSingletons,
+    TDependencies,
+    TImplementationScope,
+    TConfiguration,
+    TAnyImplementation,
+    TDependencyUserDescriptor,
+    TDependencyDescriptor,
+    TContainerInternal
+} from "./types";
 
-export type TImplementation<TConstructorArgs, TInstanceType> = {
-    new(...args: TConstructorArgs[]): TInstanceType;
-};
-
-export type TAnyImplementation = TImplementation<any, any>;
-
-export type TImplementationMap = {
-    [id: string]: TAnyImplementation[];
-};
-
-export type TImplementationScopes = {
-    [id: string]: TImplementationScope;
-}
-
-export type TImplementationScope = 'singleton' | 'transient';
-
-export type TConfiguration = {
-    defaultScope: TImplementationScope,
-    defaultLazy: boolean,
-    isSingletonWarningDisabled: boolean
-};
-
-export type TSingletons = {
-    [id: string]: any
-};
-
-export type TDependencyDescriptor = {
-    isLazy: boolean,
-    isMulti: boolean,
-    id: string,
-    name: string
-};
-
-export type TDependencyUserDescriptor = {
-    isLazy?: boolean,
-    isMulti?: boolean,
-    id: string,
-    name: string
-};
-
-export type TDependencies = {
-    [id: string]: TDependencyDescriptor[]
-};
-
-function getLazyPropertyName(name) {
-    return `_dinjLazyDependency_${name}`;
-}
-
-export class Container {
+export class Container implements TContainerInternal {
     private typeIndex: number = 0;
     private typeIdentifiers: TypeIdentifierMap = {};
     private implementations: TImplementationMap = {};
     private scopes: TImplementationScopes = {};
     private singletons: TSingletons = {};
     private dependencies: TDependencies = {};
-    private isSingletonWarningDisabled: boolean = false;
     private defaultScope: TImplementationScope = 'transient';
     private defaultLazy: boolean = false;
+    private isSingletonWarningDisabled: boolean = false;
+    private isStaticWarningDisabled: boolean = false;
 
-    public configure(configuration: TConfiguration) {
+    public configure = (configuration: TConfiguration) => {
         if (configuration.defaultScope != null) {
             this.defaultScope = configuration.defaultScope;
         }
@@ -70,6 +33,9 @@ export class Container {
         }
         if (configuration.isSingletonWarningDisabled != null) {
             this.isSingletonWarningDisabled = configuration.isSingletonWarningDisabled;
+        }
+        if (configuration.isStaticWarningDisabled != null) {
+            this.isStaticWarningDisabled = configuration.isStaticWarningDisabled;
         }
     }
 
@@ -126,6 +92,43 @@ export class Container {
         }
         this.dependencies[id] = dependencies;
     }
+    
+    private createLazyGetter(dependency: TDependencyDescriptor) {
+        let dependencyInstance: any = null;
+        return () => {
+            if (!dependencyInstance) {
+                if (dependency.isMulti) {
+                    dependencyInstance = this.getMulti(dependency.id);
+                }
+                else {
+                    dependencyInstance = this.get(dependency.id);
+                }
+            }
+            return dependencyInstance;
+        }
+    }
+
+    public transferStaticProperties(klass: TAnyImplementation, implementation: TAnyImplementation) {
+        let propertyIds = [
+            ...Object.getOwnPropertyNames(klass),
+            ...Object.getOwnPropertySymbols(klass)
+        ];
+        for (var i = 0; i < propertyIds.length; i++) {
+            try {
+                const propertyId = propertyIds[i];
+                const descriptor = Object.getOwnPropertyDescriptor(klass, propertyId);
+                if (descriptor) {
+                    Object.defineProperty(implementation, propertyId, descriptor);
+                }
+            }
+            catch(_) {
+                if (!this.isStaticWarningDisabled) {
+                    console.warn(`Not able to transfer all static properties of provided class. To disable this warning, configure 'isStaticWarningDisabled' to be 'true'.`);
+                }
+            }
+        }
+        return implementation;
+    }
 
     public getSelf(id: string, instance: any) {
         if (this.scopes[id] === 'singleton') {
@@ -140,22 +143,8 @@ export class Container {
         for (let i = 0; i < dependencies.length; i++) {
             const dependency = dependencies[i];
             if (dependency.isLazy) {
-                const lazyPropertyName = getLazyPropertyName(dependency.name);
-                instance[lazyPropertyName] = null;
                 Object.defineProperty(instance, dependency.name, {
-                    get: () => {
-                        if (instance[lazyPropertyName]) {
-                            return instance[lazyPropertyName];
-                        }
-                        else {
-                            if (dependency.isMulti) {
-                                instance[lazyPropertyName] = this.getMulti(dependency.id);
-                            }
-                            else {
-                                instance[lazyPropertyName] = this.get(dependency.id);
-                            }
-                        }
-                    }
+                    get: this.createLazyGetter(dependency)
                 })
             }
             else {
@@ -191,22 +180,4 @@ export class Container {
         }
         return instances;
     }
-}
-
-export function createImplementation(container: Container, id: string, dependencies: TDependencyUserDescriptor[], Class: TAnyImplementation, scope?: TImplementationScope) {
-    function setup(instance) {
-        container.getSelf(id, instance);
-        instance._dinjSetupCalled = true;
-    }
-    const implementation = class extends Class {
-        constructor(...args) {
-            super(...args, setup);
-            if (!this._dinjSetupCalled) {
-                setup(this);
-            }
-        }
-    }
-    container.registerImplementation(id, implementation, scope);
-    container.registerDependencies(id, dependencies);
-    return implementation;
 }

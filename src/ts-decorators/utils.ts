@@ -1,4 +1,4 @@
-import { TDependencyUserDescriptor } from "../container";
+import { TDependencyUserDescriptor } from "../types";
 
 export const DEP_NAME = '_dinjDependencies';
 
