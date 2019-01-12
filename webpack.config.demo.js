@@ -2,9 +2,9 @@ const path = require('path');
 const createConfig = require('./webpack.config');
 
 module.exports = createConfig({
-    entry: "./demo/demo.ts",
+    entry: "./demo/index.ts",
     output: {
-        filename: "./demo.js",
+        filename: "./index.js",
         path: path.resolve(__dirname, "./build-demo")
     }
 });

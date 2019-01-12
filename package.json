@@ -5,7 +5,7 @@
   "main": "build/main.js",
   "scripts": {
     "build:dev": "webpack --config webpack.config.demo.js --watch",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "webpack --config webpack.config.test.js && mocha ./build-test/index.js"
   },
   "repository": {
     "type": "git",
@@ -28,7 +28,9 @@
     "@babel/plugin-proposal-decorators": "^7.2.3",
     "@babel/preset-env": "^7.2.3",
     "@babel/preset-typescript": "^7.1.0",
+    "@types/mocha": "^5.2.5",
     "babel-loader": "^8.0.5",
+    "mocha": "^5.2.0",
     "webpack": "^4.28.3",
     "webpack-cli": "^3.2.0"
   }
