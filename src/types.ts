@@ -21,10 +21,11 @@ export type TImplementationScope = 'singleton' | 'transient';
 export type TConfiguration = {
     defaultScope?: TImplementationScope,
     defaultLazy?: boolean,
-    showSingletonWarning?: boolean,
     showStaticWarning?: boolean,
+    showSingletonWarning?: boolean,
     showCircularDependencyError?: boolean,
-    showPotentialCircularWarning?: boolean
+    showLazyPotentialCircularWarning?: boolean
+    showSingletonPotentialCircularWarning?: boolean
 };
 
 export type TSingletons = {

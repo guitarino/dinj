@@ -23,8 +23,9 @@ export class Container implements TContainerInternal {
     private defaultLazy: boolean = false;
     private showSingletonWarning: boolean = true;
     private showStaticWarning: boolean = true;
-    private showPotentialCircularWarning: boolean = false;
     private showCircularDependencyError: boolean = true;
+    private showLazyPotentialCircularWarning: boolean = false;
+    private showSingletonPotentialCircularWarning: boolean = true;
 
     public configure = (configuration: TConfiguration) => {
         if (configuration.defaultScope != null) {
@@ -39,11 +40,14 @@ export class Container implements TContainerInternal {
         if (configuration.showStaticWarning != null) {
             this.showStaticWarning = configuration.showStaticWarning;
         }
-        if (configuration.showPotentialCircularWarning != null) {
-            this.showPotentialCircularWarning = configuration.showPotentialCircularWarning;
-        }
         if (configuration.showCircularDependencyError != null) {
             this.showCircularDependencyError = configuration.showCircularDependencyError;
+        }
+        if (configuration.showLazyPotentialCircularWarning != null) {
+            this.showLazyPotentialCircularWarning = configuration.showLazyPotentialCircularWarning;
+        }
+        if (configuration.showSingletonPotentialCircularWarning != null) {
+            this.showSingletonPotentialCircularWarning = configuration.showSingletonPotentialCircularWarning;
         }
     }
 
@@ -193,20 +197,20 @@ export class Container implements TContainerInternal {
         for (let j = 0; j < newDependencyAncestors.length; j++) {
             const dependencyAncestorId = newDependencyAncestors[j];
             if (currentDependencyId === dependencyAncestorId) {
-                const dependencyPathString = this.showPotentialCircularWarning || this.showCircularDependencyError ?
+                const dependencyPathString = this.showLazyPotentialCircularWarning || this.showSingletonPotentialCircularWarning || this.showCircularDependencyError ?
                     [...newDependencyAncestors.slice(j), currentDependencyId].join(' -> ') :
                     '';
                 const currentHasLazy = currentIsLazy.slice(j).reduce((prev, next) => prev || next, false);
                 const newHasSingleton = newIsSingleton.slice(j).reduce((prev, next) => prev || next, false);
                 if (currentHasLazy) {
-                    if (this.showPotentialCircularWarning) {
-                        console.warn(`Potential circular dependency detected (one of the dependencies is lazy): ${dependencyPathString}. To disable this warning, configure 'showPotentialCircularWarning' to be 'false'.`);
+                    if (this.showLazyPotentialCircularWarning) {
+                        console.warn(`Potential circular dependency detected (one of the dependencies is lazy): ${dependencyPathString}. To disable this warning, configure 'showLazyPotentialCircularWarning' to be 'false'.`);
                     }
                     break;
                 }
                 else if (newHasSingleton) {
-                    if (this.showPotentialCircularWarning) {
-                        console.warn(`Potential circular dependency detected (one of the dependencies is a singleton): ${dependencyPathString}. To disable this warning, configure 'showPotentialCircularWarning' to be 'false'.`);
+                    if (this.showSingletonPotentialCircularWarning) {
+                        console.warn(`Potential circular dependency detected (one of the dependencies is a singleton): ${dependencyPathString}. To disable this warning, configure 'showSingletonPotentialCircularWarning' to be 'false'.`);
                     }
                     break;
                 }

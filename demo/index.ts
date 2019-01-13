@@ -1,9 +1,7 @@
-import { Container } from "../src/container";
-import { createDecorators } from "../src/ts-decorators";
-import { TSetup } from "../src/types";
+import { Container, createDecorators, TSetup } from "../src";
 
 const container = new Container();
-const { type } = container;
+const { type, hasCircularDependencies } = container;
 const { dependency, inject, lazy, multi, singleton, transient } = createDecorators(container);
 
 const IAClass = type(); // 0
@@ -23,7 +21,7 @@ class BClass implements IBClass {}
 
 @dependency(ICClass) @singleton
 class CClass implements ICClass {
-    @inject(IDClass) @lazy @multi
+    @inject(IDClass) @multi
     private d: IDClass;
 }
 
@@ -54,12 +52,10 @@ class AClass {
     private e: IDClass;
 
     constructor(setup?: TSetup) {
-        if (setup) {
-            setup(this);
-        }
-        debugger;
     }
 }
+
+console.log('hasCircularDependencies', hasCircularDependencies());
 
 const a = new AClass();
 
