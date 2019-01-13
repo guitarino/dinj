@@ -130,7 +130,7 @@ export class Container implements TContainerInternal {
                 }
             }
             catch(_) {
-                if (!this.showStaticWarning) {
+                if (this.showStaticWarning) {
                     console.warn(`Not able to transfer all static properties of provided class. To disable this warning, configure 'showStaticWarning' to be 'false'.`);
                 }
             }
@@ -143,7 +143,7 @@ export class Container implements TContainerInternal {
             if (!this.singletons[id]) {
                 this.singletons[id] = instance;
             }
-            else if(!this.showSingletonWarning) {
+            else if(this.showSingletonWarning) {
                 console.warn(`The dependency ${id} is configured as a singleton. Creating it with 'new' may be unintentional. To disable this warning, configure 'showSingletonWarning' to be 'false'.`);
             }
         }
