@@ -1,6 +1,6 @@
 import { TDependencyUserDescriptor } from "../types";
 
-export const DEP_NAME = '_dinjDependencies';
+export const DEP_NAME = '_ioconDependencies';
 
 export function addDependencyProp<T extends keyof TDependencyUserDescriptor>(
     prototype: any,

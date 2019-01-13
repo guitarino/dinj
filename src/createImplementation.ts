@@ -4,9 +4,10 @@ function createClassWithSetup(c: TAnyImplementation, setup: TSetup): TAnyImpleme
     return class extends c {
         constructor(...args) {
             super(...args, setup);
-            if (!this._dinjSetupCalled) {
+            if (!this._ioconSetupCalled) {
                 setup(this);
             }
+            delete this._ioconSetupCalled;
         }
     }
 }
@@ -22,7 +23,7 @@ export function createImplementation(
     const implementation = ({
         [cName]: createClassWithSetup(c, function (instance) {
             container.getSelf(id, instance);
-            instance._dinjSetupCalled = true;
+            instance._ioconSetupCalled = true;
         })
     })[cName];
     container.transferStaticProperties(c, implementation);

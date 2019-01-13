@@ -1,6 +1,6 @@
 import { TImplementationScope } from "../types";
 
-export const SCOPE_NAME = '_dinjScope';
+export const SCOPE_NAME = '_ioconScope';
 
 export function createSingletonDecorator(): ClassDecorator {
     return function (Class: any): any {

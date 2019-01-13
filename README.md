@@ -1,2 +1,2 @@
-# dinj
+# iocon
 Dependency Injection Container

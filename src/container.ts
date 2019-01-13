@@ -70,7 +70,7 @@ export class Container implements TContainerInternal {
     }
 
     public type = (...children: string[]) => {
-        return this.addTypeIdentifier(`_dinjType${this.typeIndex++}`, children);
+        return this.addTypeIdentifier(`_ioconType${this.typeIndex++}`, children);
     }
 
     private addImplementation(id: string, implementation: TAnyImplementation) {
