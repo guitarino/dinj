@@ -208,13 +208,13 @@ export class Container implements TContainerInternal {
                     }
                     break;
                 }
-                else if (newHasSingleton) {
+                if (newHasSingleton) {
                     if (this.showSingletonPotentialCircularWarning) {
                         console.warn(`Potential circular dependency detected (one of the dependencies is a singleton): ${dependencyPathString}. To disable this warning, configure 'showSingletonPotentialCircularWarning' to be 'false'.`);
                     }
                     break;
                 }
-                else {
+                if (!currentHasLazy && !newHasSingleton) {
                     if (this.showCircularDependencyError) {
                         console.error(`Circular dependency detected: ${dependencyPathString}. To disable this error, configure 'showCircularDependencyError' to be 'false'.`);
                     }
