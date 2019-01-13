@@ -3,11 +3,11 @@ import { createInjectDecorator } from "./inject";
 import { createLazyDecorator } from "./lazy";
 import { createMultiDecorator } from "./multi";
 import { createSingletonDecorator, createTransientDecorator } from "./scopes";
-import { TContainerInternal } from "../types";
+import { TContainerInternal, TContainer } from "../types";
 
-export function createDecorators(container: TContainerInternal) {
+export function createDecorators(container: TContainer) {
     return {
-        dependency: createDependencyDecorator(container),
+        dependency: createDependencyDecorator(container as TContainerInternal),
         inject: createInjectDecorator(),
         lazy: createLazyDecorator(),
         multi: createMultiDecorator(),

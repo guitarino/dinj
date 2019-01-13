@@ -1,6 +1,6 @@
-import { Container, createDecorators, TSetup } from "../src";
+import { Container, createDecorators, TSetup, TContainer } from "../src";
 
-const container = new Container();
+const container: TContainer = new Container();
 const { type, hasCircularDependencies } = container;
 const { dependency, inject, lazy, multi, singleton, transient } = createDecorators(container);
 

@@ -61,7 +61,7 @@ export interface TContainerInternal extends TContainer {
 
 export interface TContainer {
     configure: (configuration: TConfiguration) => void,
-    type: (...children: string[]) => void,
+    type: (...children: string[]) => string,
     get: <T>(id: string, index: number) => T,
     hasCircularDependencies: () => boolean
 };
