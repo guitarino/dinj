@@ -1,5 +1,5 @@
 {
-  "name": "dinj",
+  "name": "iocon",
   "version": "1.0.0",
   "description": "Dependency Injection Container",
   "main": "build/main.js",
@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/guitarino/dinj.git"
+    "url": "git+https://github.com/guitarino/iocon.git"
   },
   "keywords": [
     "dependency",
