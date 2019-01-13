@@ -193,7 +193,12 @@ export class Container implements TContainerInternal {
         return instances;
     }
 
-    private isCurrentDependencyCircular(newDependencyAncestors: string[], currentDependencyId: string, newIsSingleton: boolean[], currentIsLazy: boolean[]): boolean {
+    private isCurrentDependencyCircular(
+        newDependencyAncestors: string[],
+        currentDependencyId: string,
+        newIsSingleton: boolean[],
+        currentIsLazy: boolean[]
+    ): boolean {
         for (let j = 0; j < newDependencyAncestors.length; j++) {
             const dependencyAncestorId = newDependencyAncestors[j];
             if (currentDependencyId === dependencyAncestorId) {
@@ -225,7 +230,13 @@ export class Container implements TContainerInternal {
         return false;
     }
 
-    private isDependencyVisitCircular(visitedIds: string[], dependencyId: string, dependencyAncestorIds: string[] = [], isSingleton: boolean[] = [], isLazy: boolean[] = []): boolean {
+    private isDependencyVisitCircular(
+        visitedIds: string[],
+        dependencyId: string,
+        dependencyAncestorIds: string[] = [],
+        isSingleton: boolean[] = [],
+        isLazy: boolean[] = []
+    ): boolean {
         const newDependencyAncestors = [ ...dependencyAncestorIds, dependencyId ];
         const newIsSingleton = [ ...isSingleton, this.scopes[dependencyId] === 'singleton' ];
         visitedIds.push(dependencyId);

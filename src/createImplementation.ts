@@ -1,6 +1,6 @@
 import { TAnyImplementation, TSetup, TDependencyUserDescriptor, TImplementationScope, TContainerInternal } from "./types";
 
-function createClassWithSetup(c: TAnyImplementation, setup: TSetup) {
+function createClassWithSetup(c: TAnyImplementation, setup: TSetup): TAnyImplementation {
     return class extends c {
         constructor(...args) {
             super(...args, setup);
@@ -11,7 +11,13 @@ function createClassWithSetup(c: TAnyImplementation, setup: TSetup) {
     }
 }
 
-export function createImplementation(container: TContainerInternal, id: string, dependencies: TDependencyUserDescriptor[], c: TAnyImplementation, scope?: TImplementationScope) {
+export function createImplementation(
+    container: TContainerInternal,
+    id: string,
+    dependencies: TDependencyUserDescriptor[],
+    c: TAnyImplementation,
+    scope?: TImplementationScope
+): TAnyImplementation {
     const cName = c.name ? c.name : id;
     const implementation = ({
         [cName]: createClassWithSetup(c, function (instance) {
