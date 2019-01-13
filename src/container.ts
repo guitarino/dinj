@@ -21,8 +21,10 @@ export class Container implements TContainerInternal {
     private dependencies: TDependencies = {};
     private defaultScope: TImplementationScope = 'transient';
     private defaultLazy: boolean = false;
-    private isSingletonWarningDisabled: boolean = false;
-    private isStaticWarningDisabled: boolean = false;
+    private showSingletonWarning: boolean = true;
+    private showStaticWarning: boolean = true;
+    private showPotentialCircularWarning: boolean = false;
+    private showCircularDependencyError: boolean = true;
 
     public configure = (configuration: TConfiguration) => {
         if (configuration.defaultScope != null) {
@@ -31,11 +33,17 @@ export class Container implements TContainerInternal {
         if (configuration.defaultLazy != null) {
             this.defaultLazy = configuration.defaultLazy;
         }
-        if (configuration.isSingletonWarningDisabled != null) {
-            this.isSingletonWarningDisabled = configuration.isSingletonWarningDisabled;
+        if (configuration.showSingletonWarning != null) {
+            this.showSingletonWarning = configuration.showSingletonWarning;
         }
-        if (configuration.isStaticWarningDisabled != null) {
-            this.isStaticWarningDisabled = configuration.isStaticWarningDisabled;
+        if (configuration.showStaticWarning != null) {
+            this.showStaticWarning = configuration.showStaticWarning;
+        }
+        if (configuration.showPotentialCircularWarning != null) {
+            this.showPotentialCircularWarning = configuration.showPotentialCircularWarning;
+        }
+        if (configuration.showCircularDependencyError != null) {
+            this.showCircularDependencyError = configuration.showCircularDependencyError;
         }
     }
 
@@ -109,10 +117,10 @@ export class Container implements TContainerInternal {
     }
 
     public transferStaticProperties(klass: TAnyImplementation, implementation: TAnyImplementation) {
-        let propertyIds = [
-            ...Object.getOwnPropertyNames(klass),
-            ...Object.getOwnPropertySymbols(klass)
-        ];
+        let propertyIds: (string | symbol)[] = Object.getOwnPropertyNames(klass);
+        if (Object.getOwnPropertySymbols) {
+            propertyIds.push(...Object.getOwnPropertySymbols(klass));
+        }
         for (var i = 0; i < propertyIds.length; i++) {
             try {
                 const propertyId = propertyIds[i];
@@ -122,8 +130,8 @@ export class Container implements TContainerInternal {
                 }
             }
             catch(_) {
-                if (!this.isStaticWarningDisabled) {
-                    console.warn(`Not able to transfer all static properties of provided class. To disable this warning, configure 'isStaticWarningDisabled' to be 'true'.`);
+                if (!this.showStaticWarning) {
+                    console.warn(`Not able to transfer all static properties of provided class. To disable this warning, configure 'showStaticWarning' to be 'false'.`);
                 }
             }
         }
@@ -135,8 +143,8 @@ export class Container implements TContainerInternal {
             if (!this.singletons[id]) {
                 this.singletons[id] = instance;
             }
-            else if(!this.isSingletonWarningDisabled) {
-                console.warn(`The dependency ${id} is configured as a singleton. Creating it with 'new' may be unintentional. To disable this warning, configure 'isSingletonWarningDisabled' to be 'true'.`);
+            else if(!this.showSingletonWarning) {
+                console.warn(`The dependency ${id} is configured as a singleton. Creating it with 'new' may be unintentional. To disable this warning, configure 'showSingletonWarning' to be 'false'.`);
             }
         }
         const dependencies = this.dependencies[id];
@@ -145,7 +153,7 @@ export class Container implements TContainerInternal {
             if (dependency.isLazy) {
                 Object.defineProperty(instance, dependency.name, {
                     get: this.createLazyGetter(dependency)
-                })
+                });
             }
             else {
                 if (dependency.isMulti) {
@@ -179,5 +187,68 @@ export class Container implements TContainerInternal {
             instances.push(this.get(id, i));
         }
         return instances;
+    }
+
+    private isCurrentDependencyCircular(newDependencyAncestors: string[], currentDependencyId: string, newIsSingleton: boolean[], currentIsLazy: boolean[]): boolean {
+        for (let j = 0; j < newDependencyAncestors.length; j++) {
+            const dependencyAncestorId = newDependencyAncestors[j];
+            if (currentDependencyId === dependencyAncestorId) {
+                const dependencyPathString = this.showPotentialCircularWarning || this.showCircularDependencyError ?
+                    [...newDependencyAncestors.slice(j), currentDependencyId].join(' -> ') :
+                    '';
+                const currentHasLazy = currentIsLazy.slice(j).reduce((prev, next) => prev || next, false);
+                const newHasSingleton = newIsSingleton.slice(j).reduce((prev, next) => prev || next, false);
+                if (currentHasLazy) {
+                    if (this.showPotentialCircularWarning) {
+                        console.warn(`Potential circular dependency detected (one of the dependencies is lazy): ${dependencyPathString}. To disable this warning, configure 'showPotentialCircularWarning' to be 'false'.`);
+                    }
+                    break;
+                }
+                else if (newHasSingleton) {
+                    if (this.showPotentialCircularWarning) {
+                        console.warn(`Potential circular dependency detected (one of the dependencies is a singleton): ${dependencyPathString}. To disable this warning, configure 'showPotentialCircularWarning' to be 'false'.`);
+                    }
+                    break;
+                }
+                else {
+                    if (this.showCircularDependencyError) {
+                        console.error(`Circular dependency detected: ${dependencyPathString}. To disable this error, configure 'showCircularDependencyError' to be 'false'.`);
+                    }
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private isDependencyVisitCircular(visitedIds: string[], dependencyId: string, dependencyAncestorIds: string[] = [], isSingleton: boolean[] = [], isLazy: boolean[] = []): boolean {
+        const newDependencyAncestors = [ ...dependencyAncestorIds, dependencyId ];
+        const newIsSingleton = [ ...isSingleton, this.scopes[dependencyId] === 'singleton' ];
+        visitedIds.push(dependencyId);
+        const childDependencies = this.dependencies[dependencyId];
+        for (let i = 0; i < childDependencies.length; i++) {
+            const currentDependencyId = childDependencies[i].id;
+            const currentIsLazy = [ ...isLazy, childDependencies[i].isLazy ];
+            if (this.isCurrentDependencyCircular(newDependencyAncestors, currentDependencyId, newIsSingleton, currentIsLazy)) {
+                return true;
+            }
+            if (~visitedIds.indexOf(currentDependencyId)) {
+                continue;
+            }
+            if (this.isDependencyVisitCircular(visitedIds, currentDependencyId, newDependencyAncestors, newIsSingleton, currentIsLazy)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public hasCircularDependencies = () => {
+        const visitedIds: string[] = [];
+        for (let dependencyId in this.dependencies) {
+            if (this.isDependencyVisitCircular(visitedIds, dependencyId, [])) {
+                return true;
+            }
+        }
+        return false;
     }
 }

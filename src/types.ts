@@ -19,10 +19,12 @@ export type TImplementationScopes = {
 export type TImplementationScope = 'singleton' | 'transient';
 
 export type TConfiguration = {
-    defaultScope: TImplementationScope,
-    defaultLazy: boolean,
-    isSingletonWarningDisabled: boolean,
-    isStaticWarningDisabled: boolean
+    defaultScope?: TImplementationScope,
+    defaultLazy?: boolean,
+    showSingletonWarning?: boolean,
+    showStaticWarning?: boolean,
+    showCircularDependencyError?: boolean,
+    showPotentialCircularWarning?: boolean
 };
 
 export type TSingletons = {
@@ -54,10 +56,11 @@ export interface TContainerInternal extends TContainer {
     registerDependencies: (id: string, userDependencies: TDependencyUserDescriptor[]) => void,
     transferStaticProperties: (klass: TAnyImplementation, implementation: TAnyImplementation) => void,
     getSelf: (id: string, instance: any) => void,
-}
+};
 
 export interface TContainer {
     configure: (configuration: TConfiguration) => void,
     type: (...children: string[]) => void,
-    get: <T>(id: string, index: number) => T
-}
+    get: <T>(id: string, index: number) => T,
+    hasCircularDependencies: () => boolean
+};
