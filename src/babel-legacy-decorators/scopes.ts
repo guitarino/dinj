@@ -1,8 +1,8 @@
-import { TImplementationScope } from "../types";
+import { TImplementationScope, TSingletonDecorator, TTransientDecorator } from "../types";
 
 export const SCOPE_NAME = '_ioconScope';
 
-export function createSingletonDecorator(): ClassDecorator {
+export function createSingletonDecorator(): TSingletonDecorator {
     return function (Class: any): any {
         const { prototype } = Class;
         const scope: TImplementationScope = 'singleton';
@@ -10,7 +10,7 @@ export function createSingletonDecorator(): ClassDecorator {
     }
 }
 
-export function createTransientDecorator(): ClassDecorator {
+export function createTransientDecorator(): TTransientDecorator {
     return function (Class: any): any {
         const { prototype } = Class;
         const scope: TImplementationScope = 'transient';

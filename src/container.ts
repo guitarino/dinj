@@ -12,6 +12,14 @@ import {
     TContainerInternal
 } from "./types";
 
+const NON_COPY_PROPERTIES: (symbol | string)[] = [
+    'length',
+    'name',
+    'arguments',
+    'caller',
+    'prototype'
+];
+
 export class Container implements TContainerInternal {
     private typeIndex: number = 0;
     private typeIdentifiers: TypeIdentifierMap = {};
@@ -80,10 +88,13 @@ export class Container implements TContainerInternal {
         this.implementations[id].push(implementation);
     }
 
-    public registerImplementation(id: string, implementation: TAnyImplementation, scope?: TImplementationScope) {
+    public registerScope(id: string, scope?: TImplementationScope) {
+        this.scopes[id] = scope ? scope : this.defaultScope;
+    }
+
+    public registerImplementation(id: string, implementation: TAnyImplementation) {
         const children = this.typeIdentifiers[id];
         this.addImplementation(id, implementation);
-        this.scopes[id] = scope ? scope : this.defaultScope;
         if (children) {
             for (let i = 0; i < children.length; i++) {
                 this.addImplementation(children[i], implementation);
@@ -128,9 +139,11 @@ export class Container implements TContainerInternal {
         for (var i = 0; i < propertyIds.length; i++) {
             try {
                 const propertyId = propertyIds[i];
-                const descriptor = Object.getOwnPropertyDescriptor(klass, propertyId);
-                if (descriptor) {
-                    Object.defineProperty(implementation, propertyId, descriptor);
+                if (!~NON_COPY_PROPERTIES.indexOf(propertyId)) {
+                    const descriptor = Object.getOwnPropertyDescriptor(klass, propertyId);
+                    if (descriptor) {
+                        Object.defineProperty(implementation, propertyId, descriptor);
+                    }
                 }
             }
             catch(_) {

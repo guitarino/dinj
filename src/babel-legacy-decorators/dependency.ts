@@ -1,10 +1,10 @@
 import { DEP_NAME } from "./utils";
 import { SCOPE_NAME } from "./scopes";
-import { TContainerInternal } from "../types";
+import { TContainerInternal, TDependencyDecorator } from "../types";
 import { createImplementation } from "../createImplementation";
 
-export function createDependencyDecorator(container: TContainerInternal) {
-    return function dependency(id: string): ClassDecorator {
+export function createDependencyDecorator(container: TContainerInternal): TDependencyDecorator {
+    return function dependency(id: string) {
         return function (Class: any): any {
             const { prototype } = Class;
             const userDependencies = prototype[DEP_NAME] || [];

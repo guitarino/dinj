@@ -53,7 +53,8 @@ export type TDependencies = {
 export type TSetup = (instance: any) => void;
 
 export interface TContainerInternal extends TContainer {
-    registerImplementation: (id: string, implementation: TAnyImplementation, scope?: TImplementationScope) => void,
+    registerScope: (id: string, scope?: TImplementationScope) => void;
+    registerImplementation: (id: string, implementation: TAnyImplementation) => void,
     registerDependencies: (id: string, userDependencies: TDependencyUserDescriptor[]) => void,
     transferStaticProperties: (klass: TAnyImplementation, implementation: TAnyImplementation) => void,
     getSelf: (id: string, instance: any) => void,
@@ -65,3 +66,15 @@ export interface TContainer {
     get: <T>(id: string, index: number) => T,
     hasCircularDependencies: () => boolean
 };
+
+export type TDependencyDecorator = (id: string) => ClassDecorator;
+
+export type TInjectDecorator = (id: string) => PropertyDecorator;
+
+export type TLazyDecorator = PropertyDecorator;
+
+export type TMultiDecorator = PropertyDecorator;
+
+export type TSingletonDecorator = ClassDecorator;
+
+export type TTransientDecorator = ClassDecorator;

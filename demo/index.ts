@@ -1,4 +1,4 @@
-import { createDecorators } from '../src/ts-decorators';
+import { createDecorators } from '../src/babel-legacy-decorators';
 import { Container, TSetup, TContainer } from "../src";
 
 const container: TContainer = new Container();
@@ -51,9 +51,6 @@ class AClass {
 
     @inject(IEClass) @multi
     private e: IDClass;
-
-    constructor(setup?: TSetup) {
-    }
 }
 
 console.log('hasCircularDependencies', hasCircularDependencies());
