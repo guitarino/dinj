@@ -7,7 +7,11 @@ export function createDependencyDecorator(container: TContainerInternal) {
     return function dependency(id: string): ClassDecorator {
         return function (Class: any): any {
             const { prototype } = Class;
-            return createImplementation(container, id, prototype[DEP_NAME] || [], Class, prototype[SCOPE_NAME]);
+            const userDependencies = prototype[DEP_NAME] || [];
+            const scope = prototype[SCOPE_NAME];
+            delete prototype[DEP_NAME];
+            delete prototype[SCOPE_NAME];
+            return createImplementation(container, id, userDependencies, Class, scope);
         }
     }
 }
