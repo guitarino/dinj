@@ -1,2 +1,2 @@
 # iocon
-Dependency Injection Container
+Dependency Injection (IoC) Container
