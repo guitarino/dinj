@@ -1,4 +1,5 @@
-import { Container, createDecorators, TSetup, TContainer } from "../src";
+import { createDecorators } from '../src/ts-decorators';
+import { Container, TSetup, TContainer } from "../src";
 
 const container: TContainer = new Container();
 const { type, hasCircularDependencies } = container;
