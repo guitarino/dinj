@@ -7,10 +7,12 @@ import {
     TImplementationScope,
     TConfiguration,
     TAnyImplementation,
-    TDependencyUserDescriptor,
     TDependencyDescriptor,
-    TContainerInternal
+    TContainerInternal,
+    TTypeIdentifier
 } from "./types";
+import { createTypeIdentifier } from "./typeIdentifier";
+import { createLazy } from "./lazy";
 
 const NON_COPY_PROPERTIES: (symbol | string)[] = [
     'length',
@@ -59,7 +61,7 @@ export class Container implements TContainerInternal {
         }
     }
 
-    private addTypeIdentifier(id: string, children: string[]): string {
+    private addTypeIdentifier(id: string, children: string[]) {
         if (!this.typeIdentifiers[id]) {
             this.typeIdentifiers[id] = [];
         }
@@ -74,11 +76,21 @@ export class Container implements TContainerInternal {
                 this.addTypeIdentifier(id, grandchildren);
             }
         }
-        return id;
     }
 
-    public type = (...children: string[]) => {
-        return this.addTypeIdentifier(`_ioconType${this.typeIndex++}`, children);
+    public type = <T>(...children: TTypeIdentifier<any>[]): TTypeIdentifier<T> => {
+        const id = `_ioconType${this.typeIndex++}`;
+        return this.typeName(id, ...children);
+    }
+
+    public typeName = <T>(id: string, ...children: TTypeIdentifier<any>[]): TTypeIdentifier<T> => {
+        const childrenNames: string[] = [];
+        for (let i = 0; i < children.length; i++) {
+            childrenNames.push(children[i].id);
+        }
+        const type = createTypeIdentifier(id, this.defaultLazy, false, this.defaultScope);
+        this.addTypeIdentifier(id, childrenNames);
+        return type;
     }
 
     private addImplementation(id: string, implementation: TAnyImplementation) {
@@ -102,32 +114,27 @@ export class Container implements TContainerInternal {
         }
     }
 
-    public registerDependencies(id: string, userDependencies: TDependencyUserDescriptor[]) {
+    public registerDependencies(id: string, userDependencies: TDependencyDescriptor[]) {
         const dependencies: TDependencyDescriptor[] = [];
         for (let i = 0; i < userDependencies.length; i++) {
             const userDependency = userDependencies[i];
             dependencies.push({
-                isLazy: userDependency.isLazy != null ? userDependency.isLazy : this.defaultLazy,
-                isMulti: userDependency.isMulti != null ? userDependency.isMulti : false,
-                name: userDependency.name,
+                isLazy: userDependency.isLazy,
+                isMulti: userDependency.isMulti,
                 id: userDependency.id
             });
         }
         this.dependencies[id] = dependencies;
     }
     
-    private createLazyGetter(dependency: TDependencyDescriptor) {
-        let dependencyInstance: any = null;
+    private createDependencyGetter(dependency: TDependencyDescriptor) {
         return () => {
-            if (!dependencyInstance) {
-                if (dependency.isMulti) {
-                    dependencyInstance = this.getMulti(dependency.id);
-                }
-                else {
-                    dependencyInstance = this.get(dependency.id);
-                }
+            if (dependency.isMulti) {
+                return this.getMulti(dependency.id);
             }
-            return dependencyInstance;
+            else {
+                return this.getSingle(dependency.id, 0, []);
+            }
         }
     }
 
@@ -155,35 +162,27 @@ export class Container implements TContainerInternal {
         return implementation;
     }
 
-    public getSelf(id: string, instance: any) {
-        if (this.scopes[id] === 'singleton') {
-            if (!this.singletons[id]) {
-                this.singletons[id] = instance;
-            }
-            else if(this.showSingletonWarning) {
-                console.warn(`The dependency ${id} is configured as a singleton. Creating it with 'new' may be unintentional. To disable this warning, configure 'showSingletonWarning' to be 'false'.`);
-            }
-        }
+    public getConstructorArgs(id: string): any[] {
+        const constructorArgs: any[] = [];
         const dependencies = this.dependencies[id];
         for (let i = 0; i < dependencies.length; i++) {
             const dependency = dependencies[i];
+            const getter = this.createDependencyGetter(dependency);
             if (dependency.isLazy) {
-                Object.defineProperty(instance, dependency.name, {
-                    get: this.createLazyGetter(dependency)
-                });
+                constructorArgs.push(createLazy(getter));
             }
             else {
-                if (dependency.isMulti) {
-                    instance[dependency.name] = this.getMulti(dependency.id);
-                }
-                else {
-                    instance[dependency.name] = this.get(dependency.id);
-                }
+                constructorArgs.push(getter());
             }
         }
+        return constructorArgs;
     }
 
-    public get = <T>(id: string, index: number = 0): T => {
+    public get = <T>(type: TTypeIdentifier<T>, ...args: any[]): T => {
+        return this.getSingle(type.id, 0, args);
+    }
+
+    private getSingle<T>(id: string, index: number, args: any[]): T {
         if (this.scopes[id] === 'singleton') {
             if (this.singletons[id]) {
                 return this.singletons[id];
@@ -201,7 +200,7 @@ export class Container implements TContainerInternal {
         const implementationCount = this.implementations[id].length;
         const instances: any = [];
         for (let i = 0; i < implementationCount; i++) {
-            instances.push(this.get(id, i));
+            instances.push(this.getSingle(id, i, []));
         }
         return instances;
     }
@@ -215,9 +214,9 @@ export class Container implements TContainerInternal {
         for (let j = 0; j < newDependencyAncestors.length; j++) {
             const dependencyAncestorId = newDependencyAncestors[j];
             if (currentDependencyId === dependencyAncestorId) {
-                const dependencyPathString = this.showLazyPotentialCircularWarning || this.showSingletonPotentialCircularWarning || this.showCircularDependencyError ?
-                    [...newDependencyAncestors.slice(j), currentDependencyId].join(' -> ') :
-                    '';
+                const dependencyPathString = this.showLazyPotentialCircularWarning || this.showSingletonPotentialCircularWarning || this.showCircularDependencyError
+                    ? [...newDependencyAncestors.slice(j), currentDependencyId].join(' -> ')
+                    : '';
                 const currentHasLazy = currentIsLazy.slice(j).reduce((prev, next) => prev || next, false);
                 const newHasSingleton = newIsSingleton.slice(j).reduce((prev, next) => prev || next, false);
                 if (currentHasLazy) {

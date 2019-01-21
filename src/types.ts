@@ -1,3 +1,7 @@
+export type Lazy<TType> = {
+    value: TType;
+}
+
 export type TypeIdentifierMap = {
     [id: string]: string[];
 };
@@ -35,46 +39,101 @@ export type TSingletons = {
 export type TDependencyDescriptor = {
     isLazy: boolean,
     isMulti: boolean,
-    id: string,
-    name: string
-};
-
-export type TDependencyUserDescriptor = {
-    isLazy?: boolean,
-    isMulti?: boolean,
-    id: string,
-    name: string
+    id: string
 };
 
 export type TDependencies = {
     [id: string]: TDependencyDescriptor[]
 };
 
-export type TSetup = (instance: any) => void;
-
 export interface TContainerInternal extends TContainer {
     registerScope: (id: string, scope?: TImplementationScope) => void;
     registerImplementation: (id: string, implementation: TAnyImplementation) => void,
-    registerDependencies: (id: string, userDependencies: TDependencyUserDescriptor[]) => void,
+    registerDependencies: (id: string, userDependencies: TDependencyDescriptor[]) => void,
     transferStaticProperties: (klass: TAnyImplementation, implementation: TAnyImplementation) => void,
-    getSelf: (id: string, instance: any) => void,
+    getConstructorArgs: (id: string) => any[],
 };
 
 export interface TContainer {
     configure: (configuration: TConfiguration) => void,
-    type: (...children: string[]) => string,
-    get: <T>(id: string, index: number) => T,
+    type: <T>(...children: TTypeIdentifier<any>[]) => TTypeIdentifier<T>,
+    typeName: <T>(name: string, ...children: TTypeIdentifier<any>[]) => TTypeIdentifier<T>,
+    get: <T>(type: TTypeIdentifier<T>, ...args: any[]) => T,
     hasCircularDependencies: () => boolean
 };
 
-export type TDependencyDecorator = (id: string) => ClassDecorator;
+export type TDependencyDecorator = <T>(type: TTypeIdentifier<T>) => ClassDecorator;
 
-export type TInjectDecorator = (id: string) => PropertyDecorator;
+export type TInjectDecorator = <T>(...dependencyTypes: TTypeIdentifier<T>[]) => ClassDecorator;
 
-export type TLazyDecorator = PropertyDecorator;
+// Type Identifiers
 
-export type TMultiDecorator = PropertyDecorator;
+export interface TTypeIdentifier<T> {
+    id: string,
+    isLazy: boolean,
+    isMulti: boolean,
+    scope: TImplementationScope,
+    multi: TMultiTypeIdentifier<T>,
+    lazy: TLazyTypeIdentifier<T>,
+    singleton: TScopedTypeIdentifier<T, 'singleton'>,
+    transient: TScopedTypeIdentifier<T, 'transient'>
+}
 
-export type TSingletonDecorator = ClassDecorator;
+export interface TMultiTypeIdentifier<T> {
+    id: string,
+    isLazy: false,
+    isMulti: true,
+    lazy: TLazyMultiTypeIdentifier<T>
+}
 
-export type TTransientDecorator = ClassDecorator;
+export interface TLazyTypeIdentifier<T> {
+    id: string,
+    isLazy: true,
+    isMulti: false,
+    multi: TLazyMultiTypeIdentifier<T>
+}
+
+export interface TLazyMultiTypeIdentifier<T> {
+    id: string,
+    isLazy: true,
+    isMulti: true
+}
+
+export interface TScopedTypeIdentifier<T, Scope extends TImplementationScope> {
+    id: string,
+    scope: Scope
+}
+
+export type T_getInjection<TInjectDecoratorArg> =
+    TInjectDecoratorArg extends TTypeIdentifier<infer U> ? U :
+    TInjectDecoratorArg extends TLazyTypeIdentifier<infer U> ? Lazy<U> :
+    TInjectDecoratorArg extends TMultiTypeIdentifier<infer U> ? U[] :
+    TInjectDecoratorArg extends TLazyMultiTypeIdentifier<infer U> ? Lazy<U[]> :
+    never;
+
+export type T_mapInjectDecoratorArgsToInjections<TInjectDecoratorArgs extends any[]> = {
+    [i in keyof TInjectDecoratorArgs]: T_getInjection<TInjectDecoratorArgs[i]>;
+};
+
+export type T_getObjectFromTuple<T> = {
+    [i in Exclude<keyof T, keyof []>]: T[i]
+}
+
+export interface Klass<T extends any[]> {
+    new(...args: T): any
+}
+
+export type T_getPartialInjections<
+    TInjectDecoratorArgs extends any[]
+> = Partial<
+    T_getObjectFromTuple<
+        T_mapInjectDecoratorArgsToInjections<
+            TInjectDecoratorArgs
+        >
+    >
+>;
+
+export type TInjectDecoratorKlassArg<TKlass, TInjectDecoratorArgs extends any[]> =
+    TKlass extends Klass<infer TKlassConstructorArgs> ?
+    TKlassConstructorArgs extends T_getPartialInjections<TInjectDecoratorArgs> ? TKlass:
+    never: never;

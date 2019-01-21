@@ -1,31 +1,23 @@
-import { TAnyImplementation, TSetup, TDependencyUserDescriptor, TImplementationScope, TContainerInternal } from "./types";
-
-function createClassWithSetup(id: string, c: TAnyImplementation, setup: TSetup): any {
-    const cName = c.name ? c.name : id;
-    const implementation = ({
-        [cName]: function(...args) {
-            setup(this);
-            // issue with this is that we c.apply defines a property, but setup (getSelf) does too
-            c.apply(this, args);
-        }
-    })[cName];
-    implementation.prototype = Object.create(c.prototype);
-    return implementation;
-}
+import { TAnyImplementation, TDependencyDescriptor, TImplementationScope, TContainerInternal } from "./types";
 
 export function createImplementation(
     container: TContainerInternal,
     id: string,
-    dependencies: TDependencyUserDescriptor[],
-    c: TAnyImplementation,
-    scope?: TImplementationScope
+    dependencies: TDependencyDescriptor[],
+    klass: TAnyImplementation,
+    scope: TImplementationScope
 ): TAnyImplementation {
+    const name = klass.name || id;
     container.registerScope(id, scope);
     container.registerDependencies(id, dependencies);
-    const implementation = createClassWithSetup(id, c, function (instance) {
-        container.getSelf(id, instance);
-    });
-    container.transferStaticProperties(c, implementation);
-    container.registerImplementation(id, implementation);
-    return implementation;
+    class Dependency extends klass {
+        constructor(...args) {
+            const depArgs = container.getConstructorArgs(id);
+            super(...depArgs, ...args);
+        }
+    };
+    container.transferStaticProperties(klass, Dependency);
+    container.registerImplementation(id, Dependency);
+    // return klass;
+    return Dependency;
 }
