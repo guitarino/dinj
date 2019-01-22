@@ -7,6 +7,7 @@ export function createImplementation(
     klass: TAnyImplementation,
     userScope: TImplementationScope
 ): TAnyImplementation {
+    container.registerScope(id, userScope);
     container.registerDependencies(id, dependencies);
     class Dependency extends klass {
         constructor(...args) {
@@ -15,6 +16,6 @@ export function createImplementation(
         }
     };
     container.transferStaticProperties(klass, Dependency);
-    container.registerImplementation(id, Dependency, userScope);
+    container.registerImplementation(id, Dependency);
     return Dependency;
 }

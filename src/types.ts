@@ -16,6 +16,10 @@ export type TImplementationMap = {
     [id: string]: TAnyImplementation[];
 };
 
+export type TImplementationScopes = {
+    [id: string]: TImplementationScope;
+}
+
 export type TImplementationScope = 'singleton' | 'transient';
 
 export type TConfiguration = {
@@ -26,6 +30,10 @@ export type TConfiguration = {
     showCircularDependencyError?: boolean,
     showLazyPotentialCircularWarning?: boolean
     showSingletonPotentialCircularWarning?: boolean
+};
+
+export type TSingletons = {
+    [id: string]: any
 };
 
 export type TDependencyDescriptor = {
@@ -40,7 +48,8 @@ export type TDependencies = {
 
 export interface TContainerInternal extends TContainer {
     configure: (configuration: TConfiguration) => void,
-    registerImplementation: (id: string, implementation: TAnyImplementation, userScope?: TImplementationScope) => void,
+    registerScope: (id: string, userScope?: TImplementationScope) => void;
+    registerImplementation: (id: string, implementation: TAnyImplementation) => void,
     registerDependencies: (id: string, userDependencies: TDependencyDescriptor[]) => void,
     transferStaticProperties: (klass: TAnyImplementation, implementation: TAnyImplementation) => void,
     getConstructorArgs: (id: string) => any[],
@@ -52,7 +61,7 @@ export interface TContainer {
     getDependency: <T>(type: TTypeIdentifier<T>) => TAnyImplementation,
     getDependencies: <T>(type: TTypeIdentifier<T>) => TAnyImplementation[],
     get: <T>(type: TTypeIdentifier<T>, ...args: any[]) => T,
-    // hasCircularDependencies: () => boolean
+    hasCircularDependencies: () => boolean
 };
 
 export type TDependencyDecorator = <T>(type: TTypeIdentifier<T>) => ClassDecorator;

@@ -1,6 +1,8 @@
 import {
     TypeIdentifierMap,
     TImplementationMap,
+    TImplementationScopes,
+    TSingletons,
     TDependencies,
     TImplementationScope,
     TConfiguration,
@@ -24,13 +26,15 @@ export class Container implements TContainerInternal {
     private typeIndex: number = 0;
     private typeIdentifiers: TypeIdentifierMap = {};
     private implementations: TImplementationMap = {};
+    private scopes: TImplementationScopes = {};
+    private singletons: TSingletons = {};
     private dependencies: TDependencies = {};
     private defaultScope: TImplementationScope = 'transient';
     private defaultLazy: boolean = false;
     private showStaticWarning: boolean = true;
-    // private showCircularDependencyError: boolean = true;
-    // private showLazyPotentialCircularWarning: boolean = false;
-    // private showSingletonPotentialCircularWarning: boolean = true;
+    private showCircularDependencyError: boolean = true;
+    private showLazyPotentialCircularWarning: boolean = false;
+    private showSingletonPotentialCircularWarning: boolean = true;
 
     public configure(configuration: TConfiguration) {
         if (configuration.defaultScope != null) {
@@ -42,15 +46,15 @@ export class Container implements TContainerInternal {
         if (configuration.showStaticWarning != null) {
             this.showStaticWarning = configuration.showStaticWarning;
         }
-        // if (configuration.showCircularDependencyError != null) {
-        //     this.showCircularDependencyError = configuration.showCircularDependencyError;
-        // }
-        // if (configuration.showLazyPotentialCircularWarning != null) {
-        //     this.showLazyPotentialCircularWarning = configuration.showLazyPotentialCircularWarning;
-        // }
-        // if (configuration.showSingletonPotentialCircularWarning != null) {
-        //     this.showSingletonPotentialCircularWarning = configuration.showSingletonPotentialCircularWarning;
-        // }
+        if (configuration.showCircularDependencyError != null) {
+            this.showCircularDependencyError = configuration.showCircularDependencyError;
+        }
+        if (configuration.showLazyPotentialCircularWarning != null) {
+            this.showLazyPotentialCircularWarning = configuration.showLazyPotentialCircularWarning;
+        }
+        if (configuration.showSingletonPotentialCircularWarning != null) {
+            this.showSingletonPotentialCircularWarning = configuration.showSingletonPotentialCircularWarning;
+        }
     }
 
     private addTypeIdentifier(id: string, children: string[]) {
@@ -92,9 +96,11 @@ export class Container implements TContainerInternal {
         this.implementations[id].push(implementation);
     }
 
-    public registerImplementation(id: string, implementation: any, userScope?: TImplementationScope) {
-        const scope = userScope ? userScope : this.defaultScope;
-        implementation.scope = scope;
+    public registerScope(id: string, userScope?: TImplementationScope) {
+        this.scopes[id] = userScope ? userScope : this.defaultScope;
+    }
+
+    public registerImplementation(id: string, implementation: TAnyImplementation) {
         const children = this.typeIdentifiers[id];
         this.addImplementation(id, implementation);
         if (children) {
@@ -181,13 +187,15 @@ export class Container implements TContainerInternal {
     }
 
     private getSingle<T>(id: string, index: number, args: any[]): T {
-        const implementation = this.implementations[id][index] as any;
-        if (implementation.scope === 'singleton' && implementation.instance) {
-            return implementation.instance;
+        if (this.scopes[id] === 'singleton') {
+            if (this.singletons[id]) {
+                return this.singletons[id];
+            }
         }
+        const implementation = this.implementations[id][index];
         const instance = new implementation();
-        if (implementation.scope === 'singleton') {
-            implementation.instance = instance;
+        if (this.scopes[id] === 'singleton') {
+            this.singletons[id] = instance;
         }
         return instance;
     }
@@ -200,10 +208,6 @@ export class Container implements TContainerInternal {
         }
         return instances;
     }
-
-    /*
-    
-    TODO: Rethink circular dependency due to Singleton
 
     private isCurrentDependencyCircular(
         newDependencyAncestors: string[],
@@ -278,5 +282,4 @@ export class Container implements TContainerInternal {
         }
         return false;
     }
-    */
 }
