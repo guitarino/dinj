@@ -47,6 +47,7 @@ export type TDependencies = {
 };
 
 export interface TContainerInternal extends TContainer {
+    configure: (configuration: TConfiguration) => void,
     registerScope: (id: string, scope?: TImplementationScope) => void;
     registerImplementation: (id: string, implementation: TAnyImplementation) => void,
     registerDependencies: (id: string, userDependencies: TDependencyDescriptor[]) => void,
@@ -55,7 +56,6 @@ export interface TContainerInternal extends TContainer {
 };
 
 export interface TContainer {
-    configure: (configuration: TConfiguration) => void,
     type: <T>(...children: TTypeIdentifier<any>[]) => TTypeIdentifier<T>,
     typeName: <T>(name: string, ...children: TTypeIdentifier<any>[]) => TTypeIdentifier<T>,
     getDependency: <T>(type: TTypeIdentifier<T>) => TAnyImplementation,

@@ -8,10 +8,21 @@
             "type": "node",
             "request": "launch",
             "name": "Launch Demo",
-            "program": "${workspaceFolder}\\build-demo\\index.js",
+            "program": "${workspaceFolder}/build-demo/index.js",
             "outFiles": [
                 "${workspaceFolder}/**/*.js"
             ]
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Run Tests",
+            "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+            "args": [
+                "${workspaceFolder}/build-test/index.js"
+            ],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen"
         }
     ]
 }

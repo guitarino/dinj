@@ -1,7 +1,7 @@
 import { createDecorators } from '../src/babel-legacy-decorators';
-import { Container, TContainer, Lazy } from "../src";
+import { createContainer, TContainer, Lazy } from "../src";
 
-const container: TContainer = new Container();
+const container: TContainer = createContainer();
 const { get, type, hasCircularDependencies } = container;
 const { dependency, inject } = createDecorators(container);
 

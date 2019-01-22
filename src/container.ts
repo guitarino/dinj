@@ -31,21 +31,17 @@ export class Container implements TContainerInternal {
     private dependencies: TDependencies = {};
     private defaultScope: TImplementationScope = 'transient';
     private defaultLazy: boolean = false;
-    private showSingletonWarning: boolean = true;
     private showStaticWarning: boolean = true;
     private showCircularDependencyError: boolean = true;
     private showLazyPotentialCircularWarning: boolean = false;
     private showSingletonPotentialCircularWarning: boolean = true;
 
-    public configure = (configuration: TConfiguration) => {
+    public configure(configuration: TConfiguration) {
         if (configuration.defaultScope != null) {
             this.defaultScope = configuration.defaultScope;
         }
         if (configuration.defaultLazy != null) {
             this.defaultLazy = configuration.defaultLazy;
-        }
-        if (configuration.showSingletonWarning != null) {
-            this.showSingletonWarning = configuration.showSingletonWarning;
         }
         if (configuration.showStaticWarning != null) {
             this.showStaticWarning = configuration.showStaticWarning;
