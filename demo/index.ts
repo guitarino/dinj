@@ -11,8 +11,8 @@ const ICClass = type<ICClass>(); // 2
 const IDClass = type<IDClass>(); // 3
 const IEClass = type<IEClass>(IDClass); // 4
 
-interface IAClass { aClassMethod(); };
-interface IBClass { something(); };
+interface IAClass {};
+interface IBClass {};
 interface ICClass {};
 interface IDClass {};
 interface IEClass extends IDClass {};
@@ -21,9 +21,6 @@ interface IEClass extends IDClass {};
     IBClass.transient
 )
 export class BClass implements IBClass {
-    something() {
-        return 0;
-    }
 }
 
 @dependency(
@@ -33,9 +30,9 @@ export class BClass implements IBClass {
     IDClass.multi
 )
 export class CClass implements ICClass {
-    private d: IDClass;
+    private readonly d: IDClass[];
 
-    constructor(d) {
+    constructor(d: IDClass[]) {
         this.d = d;
     }
 }
@@ -48,10 +45,10 @@ export class CClass implements ICClass {
     ICClass.lazy.multi
 )
 export class DClass implements IDClass {
-    private b: Lazy<IBClass>;
-    private c: Lazy<ICClass[]>;
+    private readonly b: Lazy<IBClass>;
+    private readonly c: Lazy<ICClass[]>;
 
-    constructor(b, c) {
+    constructor(b: Lazy<IBClass>, c: Lazy<ICClass[]>) {
         this.b = b;
         this.c = c;
     }
@@ -72,26 +69,21 @@ export class EClass extends DClass implements IEClass {}
     IDClass.multi
 )
 export class AClass implements IAClass {
-    private b: IBClass;
-    private c: Lazy<ICClass>;
-    private d: IDClass;
-    private e: IDClass[];
+    private readonly b: IBClass;
+    private readonly c: Lazy<ICClass>;
+    private readonly d: IDClass;
+    private readonly e: IDClass[];
 
-    constructor(b, c, d, e) {
+    constructor(b: IBClass, c: Lazy<ICClass>, d: IDClass, e: IDClass[]) {
         this.b = b;
         this.c = c;
         this.d = d;
         this.e = e;
-    }
-
-    aClassMethod() {
-        console.log("aClassMethod!!!");
     }
 }
 
 console.log('hasCircularDependencies', hasCircularDependencies());
 
 const a = get(IAClass);
-a.aClassMethod();
 
 debugger;

@@ -178,6 +178,14 @@ export class Container implements TContainerInternal {
         return constructorArgs;
     }
 
+    public getDependency = <T>(type: TTypeIdentifier<T>): TAnyImplementation => {
+        return this.getDependencies(type)[0];
+    }
+
+    public getDependencies = <T>(type: TTypeIdentifier<T>): TAnyImplementation[] => {
+        return this.implementations[type.id];
+    }
+
     public get = <T>(type: TTypeIdentifier<T>, ...args: any[]): T => {
         return this.getSingle(type.id, 0, args);
     }

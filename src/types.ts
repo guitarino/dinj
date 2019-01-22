@@ -58,6 +58,8 @@ export interface TContainer {
     configure: (configuration: TConfiguration) => void,
     type: <T>(...children: TTypeIdentifier<any>[]) => TTypeIdentifier<T>,
     typeName: <T>(name: string, ...children: TTypeIdentifier<any>[]) => TTypeIdentifier<T>,
+    getDependency: <T>(type: TTypeIdentifier<T>) => TAnyImplementation,
+    getDependencies: <T>(type: TTypeIdentifier<T>) => TAnyImplementation[],
     get: <T>(type: TTypeIdentifier<T>, ...args: any[]) => T,
     hasCircularDependencies: () => boolean
 };
@@ -123,17 +125,15 @@ export interface Klass<T extends any[]> {
     new(...args: T): any
 }
 
-export type T_getPartialInjections<
+export type T_getInjections<
     TInjectDecoratorArgs extends any[]
-> = Partial<
-    T_getObjectFromTuple<
-        T_mapInjectDecoratorArgsToInjections<
-            TInjectDecoratorArgs
-        >
+> = T_getObjectFromTuple<
+    T_mapInjectDecoratorArgsToInjections<
+        TInjectDecoratorArgs
     >
 >;
 
 export type TInjectDecoratorKlassArg<TKlass, TInjectDecoratorArgs extends any[]> =
     TKlass extends Klass<infer TKlassConstructorArgs> ?
-    TKlassConstructorArgs extends T_getPartialInjections<TInjectDecoratorArgs> ? TKlass:
+    TKlassConstructorArgs extends T_getInjections<TInjectDecoratorArgs> ? TKlass:
     never: never;
