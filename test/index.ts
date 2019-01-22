@@ -4,3 +4,4 @@ import "./multi";
 import "./lazy-multi";
 import "./singleton";
 import "./transient";
+import "./deep-level";

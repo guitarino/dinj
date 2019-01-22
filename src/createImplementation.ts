@@ -5,10 +5,8 @@ export function createImplementation(
     id: string,
     dependencies: TDependencyDescriptor[],
     klass: TAnyImplementation,
-    scope: TImplementationScope
+    userScope: TImplementationScope
 ): TAnyImplementation {
-    const name = klass.name || id;
-    container.registerScope(id, scope);
     container.registerDependencies(id, dependencies);
     class Dependency extends klass {
         constructor(...args) {
@@ -17,7 +15,6 @@ export function createImplementation(
         }
     };
     container.transferStaticProperties(klass, Dependency);
-    container.registerImplementation(id, Dependency);
-    // return klass;
+    container.registerImplementation(id, Dependency, userScope);
     return Dependency;
 }
