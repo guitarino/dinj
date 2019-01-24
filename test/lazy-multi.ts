@@ -14,7 +14,7 @@ interface IB {
 
 const cConstructorFake = fake();
 
-@dependency(type(IB))
+@dependency(IB)
 class C implements IB {
     constructor() {
         cConstructorFake();
@@ -23,7 +23,7 @@ class C implements IB {
 
 const dConstructorFake = fake();
 
-@dependency(type(IB))
+@dependency(IB)
 class D implements IB {
     constructor() {
         dConstructorFake();

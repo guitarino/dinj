@@ -10,11 +10,11 @@ const IB = type<IB>();
 interface IB {
 }
 
-@dependency(type(IB))
+@dependency(IB)
 class C implements IB {
 }
 
-@dependency(type(IB))
+@dependency(IB)
 class D implements IB {
 }
 

@@ -47,21 +47,22 @@ export type TDependencies = {
 };
 
 export interface TContainerInternal extends TContainer {
+    generateUniqueImplementationTypeName: (name: string) => string,
+    generateUniqueTypeName: () => string,
     configure: (configuration: TConfiguration) => void,
-    registerScope: (id: string, userScope?: TImplementationScope) => void;
-    registerImplementation: (id: string, implementation: TAnyImplementation) => void,
+    registerImplementation: (id: string, implementation: TAnyImplementation, userScope?: TImplementationScope) => void,
     registerDependencies: (id: string, userDependencies: TDependencyDescriptor[]) => void,
     transferStaticProperties: (klass: TAnyImplementation, implementation: TAnyImplementation) => void,
     getConstructorArgs: (id: string) => any[],
 };
 
 export interface TContainer {
-    type: <T>(...children: TTypeIdentifier<any>[]) => TTypeIdentifier<T>,
-    typeName: <T>(name: string, ...children: TTypeIdentifier<any>[]) => TTypeIdentifier<T>,
+    type: <T>(...children: TAnyTypeIdentifier[]) => TTypeIdentifier<T>,
+    typeName: <T>(name: string, ...children: TAnyTypeIdentifier[]) => TTypeIdentifier<T>,
     getDependency: <T>(type: TTypeIdentifier<T>) => TAnyImplementation,
     getDependencies: <T>(type: TTypeIdentifier<T>) => TAnyImplementation[],
     get: <T>(type: TTypeIdentifier<T>, ...args: any[]) => T,
-    hasCircularDependencies: () => boolean
+    // hasCircularDependencies: () => boolean
 };
 
 export type TDependencyDecorator = <T>(type: TTypeIdentifier<T>) => ClassDecorator;
@@ -70,7 +71,11 @@ export type TInjectDecorator = <T>(...dependencyTypes: TTypeIdentifier<T>[]) => 
 
 // Type Identifiers
 
-export interface TTypeIdentifier<T> {
+export interface TAnyTypeIdentifier {
+    id: string
+}
+
+export interface TTypeIdentifier<T> extends TAnyTypeIdentifier {
     id: string,
     isLazy: boolean,
     isMulti: boolean,
@@ -81,27 +86,27 @@ export interface TTypeIdentifier<T> {
     transient: TScopedTypeIdentifier<T, 'transient'>
 }
 
-export interface TMultiTypeIdentifier<T> {
+export interface TMultiTypeIdentifier<T> extends TAnyTypeIdentifier {
     id: string,
     isLazy: false,
     isMulti: true,
     lazy: TLazyMultiTypeIdentifier<T>
 }
 
-export interface TLazyTypeIdentifier<T> {
+export interface TLazyTypeIdentifier<T> extends TAnyTypeIdentifier {
     id: string,
     isLazy: true,
     isMulti: false,
     multi: TLazyMultiTypeIdentifier<T>
 }
 
-export interface TLazyMultiTypeIdentifier<T> {
+export interface TLazyMultiTypeIdentifier<T> extends TAnyTypeIdentifier {
     id: string,
     isLazy: true,
     isMulti: true
 }
 
-export interface TScopedTypeIdentifier<T, Scope extends TImplementationScope> {
+export interface TScopedTypeIdentifier<T, Scope extends TImplementationScope> extends TAnyTypeIdentifier {
     id: string,
     scope: Scope
 }
@@ -137,3 +142,6 @@ export type TInjectDecoratorKlassArg<TKlass, TInjectDecoratorArgs extends any[]>
     TKlass extends Klass<infer TKlassConstructorArgs> ?
     TKlassConstructorArgs extends T_getInjections<TInjectDecoratorArgs> ? TKlass:
     never: never;
+
+export type TDependencyDecoratorIdentifierArg<TInterface> =
+    TTypeIdentifier<TInterface> | TScopedTypeIdentifier<TInterface, TImplementationScope>;
