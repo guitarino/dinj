@@ -23,6 +23,7 @@ const NON_COPY_PROPERTIES: (symbol | string)[] = [
 
 const IS_SINGLETON = "_ioconIsSingleton";
 const SINGLETON = "_ioconSingleton";
+const TYPE_ID = "_ioconTypeId";
 
 export class Container implements TContainerInternal {
     private typeIndex: number = 0;
@@ -32,9 +33,9 @@ export class Container implements TContainerInternal {
     private defaultScope: TImplementationScope = 'transient';
     private defaultLazy: boolean = false;
     private showStaticWarning: boolean = true;
-    // private showCircularDependencyError: boolean = true;
-    // private showLazyPotentialCircularWarning: boolean = false;
-    // private showSingletonPotentialCircularWarning: boolean = true;
+    private showCircularDependencyError: boolean = true;
+    private showLazyPotentialCircularWarning: boolean = false;
+    private showSingletonPotentialCircularWarning: boolean = true;
 
     public configure(configuration: TConfiguration) {
         if (configuration.defaultScope != null) {
@@ -46,15 +47,15 @@ export class Container implements TContainerInternal {
         if (configuration.showStaticWarning != null) {
             this.showStaticWarning = configuration.showStaticWarning;
         }
-        // if (configuration.showCircularDependencyError != null) {
-        //     this.showCircularDependencyError = configuration.showCircularDependencyError;
-        // }
-        // if (configuration.showLazyPotentialCircularWarning != null) {
-        //     this.showLazyPotentialCircularWarning = configuration.showLazyPotentialCircularWarning;
-        // }
-        // if (configuration.showSingletonPotentialCircularWarning != null) {
-        //     this.showSingletonPotentialCircularWarning = configuration.showSingletonPotentialCircularWarning;
-        // }
+        if (configuration.showCircularDependencyError != null) {
+            this.showCircularDependencyError = configuration.showCircularDependencyError;
+        }
+        if (configuration.showLazyPotentialCircularWarning != null) {
+            this.showLazyPotentialCircularWarning = configuration.showLazyPotentialCircularWarning;
+        }
+        if (configuration.showSingletonPotentialCircularWarning != null) {
+            this.showSingletonPotentialCircularWarning = configuration.showSingletonPotentialCircularWarning;
+        }
     }
 
     private addTypeIdentifier(id: string, children: string[]) {
@@ -106,6 +107,7 @@ export class Container implements TContainerInternal {
 
     public registerImplementation(id: string, implementation: TAnyImplementation, userScope?: TImplementationScope) {
         const scope = userScope ? userScope : this.defaultScope;
+        implementation[TYPE_ID] = id;
         if (scope === 'singleton') {
             implementation[IS_SINGLETON] = true;
         }
@@ -214,77 +216,92 @@ export class Container implements TContainerInternal {
         return instances;
     }
 
-    // private isCurrentDependencyCircular(
-    //     newDependencyAncestors: string[],
-    //     currentDependencyId: string,
-    //     newIsSingleton: boolean[],
-    //     currentIsLazy: boolean[]
-    // ): boolean {
-    //     for (let j = 0; j < newDependencyAncestors.length; j++) {
-    //         const dependencyAncestorId = newDependencyAncestors[j];
-    //         if (currentDependencyId === dependencyAncestorId) {
-    //             const dependencyPathString = this.showLazyPotentialCircularWarning || this.showSingletonPotentialCircularWarning || this.showCircularDependencyError
-    //                 ? [...newDependencyAncestors.slice(j), currentDependencyId].join(' -> ')
-    //                 : '';
-    //             const currentHasLazy = currentIsLazy.slice(j).reduce((prev, next) => prev || next, false);
-    //             const newHasSingleton = newIsSingleton.slice(j).reduce((prev, next) => prev || next, false);
-    //             if (currentHasLazy) {
-    //                 if (this.showLazyPotentialCircularWarning) {
-    //                     console.warn(`Potential circular dependency detected (one of the dependencies is lazy): ${dependencyPathString}. To disable this warning, configure 'showLazyPotentialCircularWarning' to be 'false'.`);
-    //                 }
-    //                 break;
-    //             }
-    //             if (newHasSingleton) {
-    //                 if (this.showSingletonPotentialCircularWarning) {
-    //                     console.warn(`Potential circular dependency detected (one of the dependencies is a singleton): ${dependencyPathString}. To disable this warning, configure 'showSingletonPotentialCircularWarning' to be 'false'.`);
-    //                 }
-    //                 break;
-    //             }
-    //             if (!currentHasLazy && !newHasSingleton) {
-    //                 if (this.showCircularDependencyError) {
-    //                     console.error(`Circular dependency detected: ${dependencyPathString}. To disable this error, configure 'showCircularDependencyError' to be 'false'.`);
-    //                 }
-    //                 return true;
-    //             }
-    //         }
-    //     }
-    //     return false;
-    // }
+    private isCurrentDependencyCircular(
+        newDependencyAncestors: string[],
+        currentDependencyId: string,
+        newIsSingleton: boolean[],
+        currentIsLazy: boolean[]
+    ): boolean {
+        for (let j = 0; j < newDependencyAncestors.length; j++) {
+            const dependencyAncestorId = newDependencyAncestors[j];
+            if (currentDependencyId === dependencyAncestorId) {
+                const dependencyPathString = this.showLazyPotentialCircularWarning || this.showSingletonPotentialCircularWarning || this.showCircularDependencyError
+                    ? [...newDependencyAncestors.slice(j), currentDependencyId].join(' -> ')
+                    : '';
+                const currentHasLazy = currentIsLazy.slice(j).reduce((prev, next) => prev || next, false);
+                const newHasSingleton = newIsSingleton.slice(j).reduce((prev, next) => prev || next, false);
+                if (currentHasLazy) {
+                    if (this.showLazyPotentialCircularWarning) {
+                        console.warn(`Potential circular dependency detected (one of the dependencies is lazy): ${dependencyPathString}. To disable this warning, configure 'showLazyPotentialCircularWarning' to be 'false'.`);
+                    }
+                    break;
+                }
+                if (newHasSingleton) {
+                    if (this.showSingletonPotentialCircularWarning) {
+                        console.warn(`Potential circular dependency detected (one of the dependencies is a singleton): ${dependencyPathString}. To disable this warning, configure 'showSingletonPotentialCircularWarning' to be 'false'.`);
+                    }
+                    break;
+                }
+                if (!currentHasLazy && !newHasSingleton) {
+                    if (this.showCircularDependencyError) {
+                        console.error(`Circular dependency detected: ${dependencyPathString}. To disable this error, configure 'showCircularDependencyError' to be 'false'.`);
+                    }
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
-    // private isDependencyVisitCircular(
-    //     visitedIds: string[],
-    //     dependencyId: string,
-    //     dependencyAncestorIds: string[] = [],
-    //     isSingleton: boolean[] = [],
-    //     isLazy: boolean[] = []
-    // ): boolean {
-    //     const newDependencyAncestors = [ ...dependencyAncestorIds, dependencyId ];
-    //     const newIsSingleton = [ ...isSingleton, this.scopes[dependencyId] === 'singleton' ];
-    //     visitedIds.push(dependencyId);
-    //     const childDependencies = this.dependencies[dependencyId];
-    //     for (let i = 0; i < childDependencies.length; i++) {
-    //         const currentDependencyId = childDependencies[i].id;
-    //         const currentIsLazy = [ ...isLazy, childDependencies[i].isLazy ];
-    //         if (this.isCurrentDependencyCircular(newDependencyAncestors, currentDependencyId, newIsSingleton, currentIsLazy)) {
-    //             return true;
-    //         }
-    //         if (~visitedIds.indexOf(currentDependencyId)) {
-    //             continue;
-    //         }
-    //         if (this.isDependencyVisitCircular(visitedIds, currentDependencyId, newDependencyAncestors, newIsSingleton, currentIsLazy)) {
-    //             return true;
-    //         }
-    //     }
-    //     return false;
-    // }
+    private isDependencyVisitCircular(
+        visitedIds: string[],
+        dependencyId: string,
+        dependencyAncestorIds: string[] = [],
+        isSingleton: boolean[] = [],
+        isLazy: boolean[] = []
+    ): boolean {
+        const implementation = this.implementations[dependencyId][0];
+        const newDependencyAncestors = [
+            ...dependencyAncestorIds,
+            dependencyId
+        ];
+        const newIsSingleton = [
+            ...isSingleton,
+            !!implementation[IS_SINGLETON]
+        ];
+        visitedIds.push(dependencyId);
+        const dependencies = this.dependencies[dependencyId];
+        for (let i = 0; i < dependencies.length; i++) {
+            const dependency = dependencies[i];
+            const implementations = this.implementations[dependency.id];
+            const childDependencyIsLazy = dependency.isLazy;
+            for (let j = 0; j < (dependency.isMulti ? implementations.length : 1); j++) {
+                const childDependencyId = implementations[j][TYPE_ID];
+                const currentIsLazy = [
+                    ...isLazy,
+                    childDependencyIsLazy
+                ];
+                if (this.isCurrentDependencyCircular(newDependencyAncestors, childDependencyId, newIsSingleton, currentIsLazy)) {
+                    return true;
+                }
+                if (~visitedIds.indexOf(childDependencyId)) {
+                    continue;
+                }
+                if (this.isDependencyVisitCircular(visitedIds, childDependencyId, newDependencyAncestors, newIsSingleton, currentIsLazy)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
-    // public hasCircularDependencies = () => {
-    //     const visitedIds: string[] = [];
-    //     for (let dependencyId in this.dependencies) {
-    //         if (this.isDependencyVisitCircular(visitedIds, dependencyId, [])) {
-    //             return true;
-    //         }
-    //     }
-    //     return false;
-    // }
+    public hasCircularDependencies = () => {
+        const visitedIds: string[] = [];
+        for (let dependencyId in this.dependencies) {
+            if (this.isDependencyVisitCircular(visitedIds, dependencyId, [])) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

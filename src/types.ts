@@ -62,7 +62,7 @@ export interface TContainer {
     getDependency: <T>(type: TTypeIdentifier<T>) => TAnyImplementation,
     getDependencies: <T>(type: TTypeIdentifier<T>) => TAnyImplementation[],
     get: <T>(type: TTypeIdentifier<T>, ...args: any[]) => T,
-    // hasCircularDependencies: () => boolean
+    hasCircularDependencies: () => boolean
 };
 
 export type TDependencyDecorator = <T>(type: TTypeIdentifier<T>) => ClassDecorator;
