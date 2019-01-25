@@ -4,7 +4,7 @@
   "description": "Dependency Injection Container",
   "main": "build/main.js",
   "scripts": {
-    "build:dev": "webpack --config webpack.config.demo.js --watch",
+    "build": "webpack --config webpack.config.src.js",
     "test:dev": "webpack --config webpack.config.test.js --watch",
     "test": "webpack --config webpack.config.test.js && nyc mocha \"./build-test/*.js\""
   },
