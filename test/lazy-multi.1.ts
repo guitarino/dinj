@@ -1,6 +1,6 @@
 import { fake } from "sinon";
 import expect from "expect.js";
-import { type, dependency, inject, get } from "./container";
+import { type, dependency, inject, get } from "./shared/container";
 import { Lazy } from "../src";
 
 const IA = type<IA>();
@@ -44,7 +44,7 @@ class A implements IA {
     }
 }
 
-describe(`Multi dependency injection`, () => {
+describe(`Multi dependency injection (lazy.multi)`, () => {
     describe(`A -> Lazy<B[] {C, D}>`, () => {
         const a = get(IA);
 

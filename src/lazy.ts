@@ -8,7 +8,8 @@ export function createLazy<TType>(getImplementation): Lazy<TType> {
             if (implementation) {
                 return implementation;
             }
-            return getImplementation();
+            implementation = getImplementation();
+            return implementation;
         }
     }
 }

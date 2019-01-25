@@ -6,7 +6,7 @@
   "scripts": {
     "build:dev": "webpack --config webpack.config.demo.js --watch",
     "test:dev": "webpack --config webpack.config.test.js --watch",
-    "test": "webpack --config webpack.config.test.js && nyc mocha ./build-test/index.js"
+    "test": "webpack --config webpack.config.test.js && nyc mocha \"./build-test/*.js\""
   },
   "repository": {
     "type": "git",

@@ -1,6 +1,6 @@
 import { fake } from "sinon";
 import expect from "expect.js";
-import { type, dependency, inject, get } from "./container";
+import { type, dependency, inject, get } from "./shared/container";
 import { Lazy } from "../src";
 
 const IA = type<IA>();
@@ -39,17 +39,23 @@ class A implements IA {
 describe(`Lazy dependency injection`, () => {
     describe(`A -> Lazy<B>`, () => {
         const a = get(IA);
+        let b;
 
         it(`"B" is not obtained before method is called`, () => {
             expect(bConstructorFake.callCount).to.be(0);
         });
 
         it(`obtains "B" via method`, () => {
-            expect(a.getB() instanceof B).to.be(true);
+            b = a.getB();
+            expect(b instanceof B).to.be(true);
         });
 
         it(`"B" is obtained after method call`, () => {
             expect(bConstructorFake.callCount).to.be(1);
+        });
+
+        it(`allows to get the same instance again`, () => {
+            expect(a.getB() === b).to.be(true);
         });
     });
 });

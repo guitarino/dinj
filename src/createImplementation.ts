@@ -17,7 +17,6 @@ export function createImplementation<TInterface>(
             super(...depArgs, ...args);
         }
     };
-    container.transferStaticProperties(klass, Dependency);
     container.registerImplementation(type.id, Dependency, userType.scope);
     return Dependency;
 }

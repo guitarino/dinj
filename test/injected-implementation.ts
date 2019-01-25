@@ -1,5 +1,5 @@
 import expect from "expect.js";
-import { type, dependency, inject, get } from "./shared/container";
+import { type, dependency, inject, get, getImplementation } from "./shared/container";
 
 const IA = type<IA>();
 interface IA {
@@ -29,9 +29,10 @@ class A implements IA {
     }
 }
 
-describe(`Regular dependency injection`, () => {
+describe(`Injected implementation`, () => {
     describe(`A -> B`, () => {
-        const a = get(IA);
+        const InjectedA = getImplementation(IA);
+        const a = new InjectedA();
 
         it(`"A" is of correct class`, () => {
             expect(a instanceof A).to.be(true);

@@ -13,14 +13,6 @@ import {
 import { createTypeIdentifier } from "./typeIdentifier";
 import { createLazy } from "./lazy";
 
-const NON_COPY_PROPERTIES: (symbol | string)[] = [
-    'length',
-    'name',
-    'arguments',
-    'caller',
-    'prototype'
-];
-
 const IS_SINGLETON = "_ioconIsSingleton";
 const SINGLETON = "_ioconSingleton";
 const TYPE_ID = "_ioconTypeId";
@@ -31,21 +23,13 @@ export class Container implements TContainerInternal {
     private implementations: TImplementationMap = {};
     private dependencies: TDependencies = {};
     private defaultScope: TImplementationScope = 'transient';
-    private defaultLazy: boolean = false;
-    private showStaticWarning: boolean = true;
     private showCircularDependencyError: boolean = true;
     private showLazyPotentialCircularWarning: boolean = false;
     private showSingletonPotentialCircularWarning: boolean = true;
 
-    public configure(configuration: TConfiguration) {
+    public configure = (configuration: TConfiguration) => {
         if (configuration.defaultScope != null) {
             this.defaultScope = configuration.defaultScope;
-        }
-        if (configuration.defaultLazy != null) {
-            this.defaultLazy = configuration.defaultLazy;
-        }
-        if (configuration.showStaticWarning != null) {
-            this.showStaticWarning = configuration.showStaticWarning;
         }
         if (configuration.showCircularDependencyError != null) {
             this.showCircularDependencyError = configuration.showCircularDependencyError;
@@ -93,7 +77,7 @@ export class Container implements TContainerInternal {
         for (let i = 0; i < children.length; i++) {
             childrenIds.push(children[i].id);
         }
-        const type = createTypeIdentifier(id, this.defaultLazy, false, this.defaultScope);
+        const type = createTypeIdentifier(id, false, false, this.defaultScope);
         this.addTypeIdentifier(id, childrenIds);
         return type;
     }
@@ -144,30 +128,6 @@ export class Container implements TContainerInternal {
         }
     }
 
-    public transferStaticProperties(klass: TAnyImplementation, implementation: TAnyImplementation) {
-        let propertyIds: (string | symbol)[] = Object.getOwnPropertyNames(klass);
-        if (Object.getOwnPropertySymbols) {
-            propertyIds.push(...Object.getOwnPropertySymbols(klass));
-        }
-        for (var i = 0; i < propertyIds.length; i++) {
-            try {
-                const propertyId = propertyIds[i];
-                if (!~NON_COPY_PROPERTIES.indexOf(propertyId)) {
-                    const descriptor = Object.getOwnPropertyDescriptor(klass, propertyId);
-                    if (descriptor) {
-                        Object.defineProperty(implementation, propertyId, descriptor);
-                    }
-                }
-            }
-            catch(_) {
-                if (this.showStaticWarning) {
-                    console.warn(`Not able to transfer all static properties of provided class. To disable this warning, configure 'showStaticWarning' to be 'false'.`);
-                }
-            }
-        }
-        return implementation;
-    }
-
     public getConstructorArgs(id: string): any[] {
         const constructorArgs: any[] = [];
         const dependencies = this.dependencies[id];
@@ -184,11 +144,11 @@ export class Container implements TContainerInternal {
         return constructorArgs;
     }
 
-    public getDependency = <T>(type: TTypeIdentifier<T>): TAnyImplementation => {
-        return this.getDependencies(type)[0];
+    public getImplementation = <T>(type: TTypeIdentifier<T>): TAnyImplementation => {
+        return this.getImplementations(type)[0];
     }
 
-    public getDependencies = <T>(type: TTypeIdentifier<T>): TAnyImplementation[] => {
+    public getImplementations = <T>(type: TTypeIdentifier<T>): TAnyImplementation[] => {
         return this.implementations[type.id];
     }
 

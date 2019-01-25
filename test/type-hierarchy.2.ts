@@ -1,4 +1,4 @@
-import { type, dependency, inject, get } from "./container";
+import { type, dependency, inject, get } from "./shared/container";
 import expect from "expect.js";
 
 const IA = type<IA>();

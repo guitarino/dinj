@@ -1,6 +1,6 @@
 import { fake } from "sinon";
 import expect from "expect.js";
-import { type, dependency, inject, get } from "./container";
+import { type, dependency, inject, get } from "./shared/container";
 
 const IA = type<IA>();
 interface IA {
