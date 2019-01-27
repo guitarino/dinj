@@ -44,7 +44,7 @@ class A implements IA {
     }
 }
 
-describe(`Multi dependency injection (multi.lazy)`, () => {
+describe(`Lazy multi dependency injection (multi.lazy)`, () => {
     describe(`A -> Lazy<B[] {C, D}>`, () => {
         const a = get(IA);
 
