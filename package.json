@@ -11,7 +11,7 @@
     "build": "npm run genTypeDec && npm run genSrcBuild",
     "build:test:dev": "concurrently \"npm run genTypeDec\" \"npm run genSrcBuild -- --watch\" \"npm run genTestBuild -- --watch\"",
     "build:test": "npm run build && npm run genTestBuild",
-    "test": "npm run build && nyc mocha-parallel-tests \"./build-test/*.js\"",
+    "test": "npm run build:test && nyc mocha-parallel-tests \"./build-test/*.js\"",
     "test:after": "nyc report --reporter=text-lcov | coveralls"
   },
   "nyc": {
