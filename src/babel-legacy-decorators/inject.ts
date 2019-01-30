@@ -1,6 +1,6 @@
 import { TDependencyDescriptor, TInjectDecoratorKlassArg } from "../types";
 
-export const DEP_NAME = '_ioconDependencies';
+export const DEP_NAME = '_typeinjectDependencies';
 
 export function createInjectDecorator() {
     return function inject<TInjectDecoratorArgs extends any[]>(...dependencyTypes: TInjectDecoratorArgs) {

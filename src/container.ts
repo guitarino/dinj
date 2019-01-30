@@ -13,9 +13,9 @@ import {
 import { createTypeIdentifier } from "./typeIdentifier";
 import { createLazy } from "./lazy";
 
-const IS_SINGLETON = "_ioconIsSingleton";
-const SINGLETON = "_ioconSingleton";
-const TYPE_ID = "_ioconTypeId";
+const IS_SINGLETON = "_typeinjectIsSingleton";
+const SINGLETON = "_typeinjectSingleton";
+const TYPE_ID = "_typeinjectTypeId";
 
 export class Container implements TContainerInternal {
     private typeIndex: number = 0;
@@ -64,7 +64,7 @@ export class Container implements TContainerInternal {
     }
 
     public generateUniqueTypeName(): string {
-        return `_ioconType${this.typeIndex++}`;
+        return `_typeinjectType${this.typeIndex++}`;
     }
 
     public type = <T>(...children: TAnyTypeIdentifier[]): TTypeIdentifier<T> => {

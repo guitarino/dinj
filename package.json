@@ -1,5 +1,5 @@
 {
-  "name": "iocon",
+  "name": "typeinject",
   "version": "0.0.1",
   "description": "Dependency Injection Container",
   "main": "build/index.js",
@@ -21,7 +21,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/guitarino/iocon.git"
+    "url": "git+https://github.com/guitarino/typeinject.git"
   },
   "keywords": [
     "dependency",
@@ -31,9 +31,9 @@
   "author": "Kirill Shestakov",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/guitarino/iocon/issues"
+    "url": "https://github.com/guitarino/typeinject/issues"
   },
-  "homepage": "https://github.com/guitarino/iocon#readme",
+  "homepage": "https://github.com/guitarino/typeinject#readme",
   "devDependencies": {
     "@babel/cli": "^7.2.3",
     "@babel/core": "^7.2.2",
