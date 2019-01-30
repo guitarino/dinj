@@ -1,6 +1,6 @@
 {
   "name": "typeinject",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Dependency Injection Container",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -11,8 +11,9 @@
     "build": "npm run genTypeDec && npm run genSrcBuild",
     "build:test:dev": "concurrently \"npm run genTypeDec\" \"npm run genSrcBuild -- --watch\" \"npm run genTestBuild -- --watch\"",
     "build:test": "npm run build && npm run genTestBuild",
-    "test": "mocha-parallel-tests \"./build-test/*.js\"",
-    "test:coverage": "nyc mocha-parallel-tests \"./build-test/*.js\""
+    "test": "npm run build && mocha-parallel-tests \"./build-test/*.js\"",
+    "test:coverage": "npm run build && nyc mocha-parallel-tests \"./build-test/*.js\"",
+    "test:coverage:after": "nyc report --reporter=text-lcov | coveralls"
   },
   "nyc": {
     "include": [
@@ -24,9 +25,16 @@
     "url": "git+https://github.com/guitarino/typeinject.git"
   },
   "keywords": [
+    "ioc",
+    "di",
+    "dependency injection",
+    "dependency inversion",
+    "inversion of control container",
     "dependency",
     "injection",
-    "container"
+    "container",
+    "inversion",
+    "SOLID"
   ],
   "author": "Kirill Shestakov",
   "license": "MIT",
@@ -46,6 +54,7 @@
     "@types/node": "^10.12.19",
     "@types/sinon": "^7.0.4",
     "concurrently": "^4.1.0",
+    "coveralls": "^3.0.2",
     "expect.js": "^0.3.1",
     "mocha": "^5.2.0",
     "mocha-parallel-tests": "^2.0.6-alpha.3",
