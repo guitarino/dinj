@@ -4,7 +4,7 @@ import { fake } from "sinon";
 import { containsDependencyTree } from "./shared/circular";
 
 const consoleWarn = fake();
-console.warn = consoleWarn;
+global.console.warn = consoleWarn;
 
 const IA = type<IA>();
 interface IA {

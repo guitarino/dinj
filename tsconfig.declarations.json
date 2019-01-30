@@ -3,20 +3,15 @@
 		"target": "esnext",
 		"experimentalDecorators": true,
 		"moduleResolution": "node",
-		"allowJs": true,
-		"noEmit": true,
-		"strict": true,
-		"isolatedModules": true,
+        "strict": true,
+        "emitDeclarationOnly": true,
+        "declaration": true,
 		"esModuleInterop": true,
 		"noImplicitAny": false,
-		"skipLibCheck": true,
-		"types": [
-			"node",
-			"mocha"
-		]
+        "skipLibCheck": true,
+        "declarationDir": "build"
 	},
 	"include": [
-        "src",
-		"test"
+        "src"
     ]
 }

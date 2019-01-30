@@ -1,5 +1,5 @@
-import { createDecorators } from '../../src/babel-legacy-decorators';
-import { createContainer, TContainer } from "../../src";
+import { createDecorators } from '../../build/babel-legacy-decorators';
+import { createContainer, TContainer } from "../../build";
 
 export const container: TContainer = createContainer();
 export const {

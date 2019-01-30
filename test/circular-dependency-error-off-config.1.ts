@@ -7,7 +7,7 @@ configure({
 });
 
 const consoleError = fake();
-console.error = consoleError;
+global.console.error = consoleError;
 
 const IA = type<IA>();
 interface IA {

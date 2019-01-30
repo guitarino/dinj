@@ -2,11 +2,22 @@
   "name": "iocon",
   "version": "0.0.1",
   "description": "Dependency Injection Container",
-  "main": "build/main.js",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
   "scripts": {
-    "build": "webpack --config webpack.config.src.js",
-    "test:dev": "webpack --config webpack.config.test.js --watch",
-    "test": "webpack --config webpack.config.test.js && nyc mocha \"./build-test/*.js\""
+    "genTypeDec": "tsc -p ./tsconfig.declarations.json",
+    "genSrcBuild": "babel ./src --out-dir ./build --extensions \".ts\" --source-maps",
+    "genTestBuild": "babel ./test --out-dir ./build-test --extensions \".ts\" --source-maps",
+    "build": "npm run genTypeDec && npm run genSrcBuild",
+    "build:test:dev": "concurrently \"npm run genTypeDec\" \"npm run genSrcBuild -- --watch\" \"npm run genTestBuild -- --watch\"",
+    "build:test": "npm run build && npm run genTestBuild",
+    "test": "mocha-parallel-tests \"./build-test/*.js\"",
+    "test:coverage": "nyc mocha-parallel-tests \"./build-test/*.js\""
+  },
+  "nyc": {
+    "include": [
+      "build"
+    ]
   },
   "repository": {
     "type": "git",
@@ -24,6 +35,7 @@
   },
   "homepage": "https://github.com/guitarino/iocon#readme",
   "devDependencies": {
+    "@babel/cli": "^7.2.3",
     "@babel/core": "^7.2.2",
     "@babel/plugin-proposal-class-properties": "^7.2.3",
     "@babel/plugin-proposal-decorators": "^7.2.3",
@@ -31,13 +43,14 @@
     "@babel/preset-typescript": "^7.1.0",
     "@types/expect.js": "^0.3.29",
     "@types/mocha": "^5.2.5",
+    "@types/node": "^10.12.19",
     "@types/sinon": "^7.0.4",
-    "babel-loader": "^8.0.5",
+    "concurrently": "^4.1.0",
     "expect.js": "^0.3.1",
     "mocha": "^5.2.0",
+    "mocha-parallel-tests": "^2.0.6-alpha.3",
     "nyc": "^13.1.0",
     "sinon": "^7.2.3",
-    "webpack": "^4.28.3",
-    "webpack-cli": "^3.2.0"
+    "typescript": "^3.2.4"
   }
 }

@@ -7,22 +7,14 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch Demo",
-            "program": "${workspaceFolder}/build-demo/index.js",
-            "outFiles": [
-                "${workspaceFolder}/**/*.js"
-            ]
-        },
-        {
-            "type": "node",
-            "request": "launch",
-            "name": "Run Tests",
+            "name": "Run Current Test",
             "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
             "args": [
-                "${workspaceFolder}/build-test/*.js"
+                "${workspaceFolder}/build-test/${fileBasenameNoExtension}.js"
             ],
             "console": "integratedTerminal",
-            "internalConsoleOptions": "neverOpen"
+            "internalConsoleOptions": "neverOpen",
+            "sourceMaps": true
         }
     ]
 }

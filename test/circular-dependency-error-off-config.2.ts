@@ -7,7 +7,7 @@ configure({
 });
 
 const consoleWarn = fake();
-console.warn = consoleWarn;
+global.console.warn = consoleWarn;
 
 const IA = type<IA>();
 interface IA {

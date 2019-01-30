@@ -5,7 +5,7 @@ import { containsDependencyTree } from "./shared/circular";
 import { Lazy } from "../src";
 
 const consoleError = fake();
-console.error = consoleError;
+global.console.error = consoleError;
 
 const IA = type<IA>();
 interface IA {
