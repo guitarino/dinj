@@ -1,6 +1,6 @@
 {
   "name": "typeinject",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Dependency Injection Container",
   "main": "index.js",
   "types": "index.d.ts",
@@ -13,7 +13,7 @@
     "build:test": "npm run build && npm run genTestBuild",
     "test": "npm run build:test && nyc mocha-parallel-tests \"./build-test/*.js\"",
     "test:after": "nyc report --reporter=text-lcov | coveralls",
-    "publish:npm": "rimraf ./build && npm run build && cpy ./package.json ./build && cd build && npm publish"
+    "publish:npm": "rimraf ./build && npm run build && cpy ./package.json ./LICENSE ./README.md ./build && cd build && npm publish"
   },
   "nyc": {
     "include": [
