@@ -2,8 +2,8 @@
   "name": "typeinject",
   "version": "0.1.0",
   "description": "Dependency Injection Container",
-  "main": "build/index.js",
-  "types": "build/index.d.ts",
+  "main": "index.js",
+  "types": "index.d.ts",
   "scripts": {
     "genTypeDec": "tsc -p ./tsconfig.declarations.json",
     "genSrcBuild": "babel ./src --out-dir ./build --extensions \".ts\" --source-maps",
@@ -12,7 +12,8 @@
     "build:test:dev": "concurrently \"npm run genTypeDec\" \"npm run genSrcBuild -- --watch\" \"npm run genTestBuild -- --watch\"",
     "build:test": "npm run build && npm run genTestBuild",
     "test": "npm run build:test && nyc mocha-parallel-tests \"./build-test/*.js\"",
-    "test:after": "nyc report --reporter=text-lcov | coveralls"
+    "test:after": "nyc report --reporter=text-lcov | coveralls",
+    "publish:npm": "rimraf ./build && npm run build && cpy ./package.json ./build && cd build && npm publish"
   },
   "nyc": {
     "include": [
@@ -54,10 +55,12 @@
     "@types/sinon": "^7.0.4",
     "concurrently": "^4.1.0",
     "coveralls": "^3.0.2",
+    "cpy-cli": "^2.0.0",
     "expect.js": "^0.3.1",
     "mocha": "^5.2.0",
     "mocha-parallel-tests": "^2.0.6-alpha.3",
     "nyc": "^13.1.0",
+    "rimraf": "^2.6.3",
     "sinon": "^7.2.3",
     "typescript": "^3.2.4"
   }
