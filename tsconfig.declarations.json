@@ -3,15 +3,15 @@
 		"target": "esnext",
 		"experimentalDecorators": true,
 		"moduleResolution": "node",
-        "strict": true,
-        "emitDeclarationOnly": true,
-        "declaration": true,
+		"strict": true,
+		"emitDeclarationOnly": true,
+		"declaration": true,
 		"esModuleInterop": true,
 		"noImplicitAny": false,
-        "skipLibCheck": true,
-        "declarationDir": "build"
+		"skipLibCheck": true,
+		"declarationDir": "build"
 	},
 	"include": [
-        "src"
-    ]
+		"src"
+	]
 }
