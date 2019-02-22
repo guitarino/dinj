@@ -1,0 +1,1 @@
+export const TYPE_ID = "_typeinjectTypeId";

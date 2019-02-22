@@ -1,4 +1,5 @@
-import { TMultiTypeIdentifier, TTypeIdentifier, TLazyMultiTypeIdentifier, TImplementationScope, TLazyTypeIdentifier, TScopedTypeIdentifier } from "./types";
+import { TMultiTypeIdentifier, TLazyTypeIdentifier, TScopedTypeIdentifier, TLazyMultiTypeIdentifier, TTypeIdentifier } from "./typeContainer.types";
+import { TImplementationScope } from "./implementationsContainer.types";
 
 export function createTypeIdentifier<T>(id: string, isLazy: boolean, isMulti: boolean, scope: TImplementationScope): TTypeIdentifier<T> {
     return {
