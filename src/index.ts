@@ -1,4 +1,3 @@
-import { Container as ContainerType } from './container.types';
 export * from './createImplementation';
 export * from './container';
-export type Container = ContainerType;
+export * from './types';
