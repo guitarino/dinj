@@ -1,14 +1,14 @@
-import { TDependencies, TDependencyDescriptor } from "./dependenciesContainer.types";
+import { DependenciesById, DependencyDescriptor } from "./dependenciesContainer.types";
 import { createLazy } from "./lazy";
-import { TTypeIdentifier } from "./typeContainer.types";
-import { TImplementationMap } from "./implementationsContainer.types";
+import { TypeIdentifier } from "./typeContainer.types";
+import { ImplementationById } from "./implementationsContainer.types";
 import { IS_SINGLETON, SINGLETON } from "./implementationsContainer.cnst";
 
-function createDependenciesContainer(implementationsById: TImplementationMap) {
-    const dependenciesById: TDependencies = {};
+export function createDependenciesContainer(implementationsById: ImplementationById) {
+    const dependenciesById: DependenciesById = {};
     
-    function registerDependencies(id: string, userDependencies: TDependencyDescriptor[]) {
-        const dependencies: TDependencyDescriptor[] = [];
+    function registerDependencies(id: string, userDependencies: DependencyDescriptor[]) {
+        const dependencies: DependencyDescriptor[] = [];
         for (let i = 0; i < userDependencies.length; i++) {
             const userDependency = userDependencies[i];
             dependencies.push({
@@ -20,7 +20,7 @@ function createDependenciesContainer(implementationsById: TImplementationMap) {
         dependenciesById[id] = dependencies;
     }
     
-    function createDependencyGetter(dependency: TDependencyDescriptor) {
+    function createDependencyGetter(dependency: DependencyDescriptor) {
         return () => {
             if (dependency.isMulti) {
                 return getMulti(dependency.id);
@@ -47,7 +47,7 @@ function createDependenciesContainer(implementationsById: TImplementationMap) {
         return constructorArgs;
     }
 
-    function get<T>(type: TTypeIdentifier<T>, ...args: any[]): T {
+    function get<T>(type: TypeIdentifier<T>, ...args: any[]): T {
         return getSingle(type.id, 0, args);
     }
 
@@ -69,5 +69,12 @@ function createDependenciesContainer(implementationsById: TImplementationMap) {
             instances.push(getSingle(id, i, []));
         }
         return instances;
+    }
+
+    return {
+        dependenciesById,
+        getConstructorArgs,
+        registerDependencies,
+        get
     }
 }

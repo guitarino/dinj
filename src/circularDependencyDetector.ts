@@ -1,13 +1,13 @@
-import { TConfiguration } from "./configuration.types";
-import { TImplementationMap } from "./implementationsContainer.types";
-import { TDependencies } from "./dependenciesContainer.types";
+import { ContainerConfiguration } from "./configuration.types";
+import { ImplementationById } from "./implementationsContainer.types";
+import { DependenciesById } from "./dependenciesContainer.types";
 import { IS_SINGLETON } from "./implementationsContainer.cnst";
 import { TYPE_ID } from "./typeContainer.cnst";
 
 export function circularDependencyDetector(
-    configuration: TConfiguration,
-    implementationsById: TImplementationMap,
-    dependenciesById: TDependencies
+    configuration: ContainerConfiguration,
+    implementationsById: ImplementationById,
+    dependenciesById: DependenciesById
 ) {
     function isCurrentDependencyCircular(
         newDependencyAncestors: string[],
@@ -98,5 +98,9 @@ export function circularDependencyDetector(
             }
         }
         return false;
+    }
+
+    return {
+        hasCircularDependencies
     }
 }

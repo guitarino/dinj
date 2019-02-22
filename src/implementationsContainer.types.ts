@@ -1,16 +1,16 @@
 
-export type TImplementation<TConstructorArgs, TInstanceType> = {
-    new(...args: TConstructorArgs[]): TInstanceType;
+export type Implementation<ConstructorArgsType, InstanceType> = {
+    new(...args: ConstructorArgsType[]): InstanceType;
 };
 
-export type TAnyImplementation = TImplementation<any, any>;
+export type AnyImplementation = Implementation<any, any>;
 
-export type TImplementationMap = {
-    [id: string]: TAnyImplementation[];
+export type ImplementationById = {
+    [id: string]: AnyImplementation[];
 };
 
 export type TImplementationScopes = {
-    [id: string]: TImplementationScope;
+    [id: string]: ImplementationScope;
 }
 
-export type TImplementationScope = 'singleton' | 'transient';
+export type ImplementationScope = 'singleton' | 'transient';

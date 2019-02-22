@@ -1,10 +1,10 @@
 import { createTypeIdentifier } from "./typeIdentifier";
-import { TypeIdentifierMap, TAnyTypeIdentifier, TTypeIdentifier } from "./typeContainer.types";
-import { TConfiguration } from "./configuration.types";
+import { TypeIdentifierById, AnyTypeIdentifier, TypeIdentifier } from "./typeContainer.types";
+import { ContainerConfiguration } from "./configuration.types";
 
-export function createTypeContainer(configuration: TConfiguration) {
+export function createTypeContainer(configuration: ContainerConfiguration) {
     let typeIndex: number = 0;
-    const typeIdentifiersById: TypeIdentifierMap = {};
+    const typeIdentifiersById: TypeIdentifierById = {};
     
     function addTypeIdentifier(id: string, children: string[]) {
         if (!typeIdentifiersById[id]) {
@@ -31,12 +31,12 @@ export function createTypeContainer(configuration: TConfiguration) {
         return `_typeinjectType${typeIndex++}`;
     }
 
-    function type<T>(...children: TAnyTypeIdentifier[]): TTypeIdentifier<T> {
+    function type<T>(...children: AnyTypeIdentifier[]): TypeIdentifier<T> {
         const id = generateUniqueTypeName();
         return typeName(id, ...children);
     }
 
-    function typeName<T>(id: string, ...children: TAnyTypeIdentifier[]): TTypeIdentifier<T> {
+    function typeName<T>(id: string, ...children: AnyTypeIdentifier[]): TypeIdentifier<T> {
         const childrenIds: string[] = [];
         for (let i = 0; i < children.length; i++) {
             childrenIds.push(children[i].id);
@@ -44,5 +44,13 @@ export function createTypeContainer(configuration: TConfiguration) {
         const type = createTypeIdentifier(id, false, false, configuration.defaultScope);
         addTypeIdentifier(id, childrenIds);
         return type;
+    }
+
+    return {
+        typeIdentifiersById,
+        type,
+        typeName,
+        generateUniqueImplementationTypeName,
+        generateUniqueTypeName
     }
 }

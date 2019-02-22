@@ -1,45 +1,45 @@
-import { TImplementationScope } from "./implementationsContainer.types";
+import { ImplementationScope } from "./implementationsContainer.types";
 
-export type TypeIdentifierMap = {
+export type TypeIdentifierById = {
     [id: string]: string[];
 };
 
-export interface TAnyTypeIdentifier {
+export interface AnyTypeIdentifier {
     id: string
 }
 
-export interface TTypeIdentifier<T> extends TAnyTypeIdentifier {
+export interface TypeIdentifier<T> extends AnyTypeIdentifier {
     id: string,
     isLazy: boolean,
     isMulti: boolean,
-    scope: TImplementationScope,
-    multi: TMultiTypeIdentifier<T>,
-    lazy: TLazyTypeIdentifier<T>,
-    singleton: TScopedTypeIdentifier<T, 'singleton'>,
-    transient: TScopedTypeIdentifier<T, 'transient'>
+    scope: ImplementationScope,
+    multi: MultiTypeIdentifier<T>,
+    lazy: LazyTypeIdentifier<T>,
+    singleton: ScopedTypeIdentifier<T, 'singleton'>,
+    transient: ScopedTypeIdentifier<T, 'transient'>
 }
 
-export interface TMultiTypeIdentifier<T> extends TAnyTypeIdentifier {
+export interface MultiTypeIdentifier<T> extends AnyTypeIdentifier {
     id: string,
     isLazy: false,
     isMulti: true,
-    lazy: TLazyMultiTypeIdentifier<T>
+    lazy: LazyMultiTypeIdentifier<T>
 }
 
-export interface TLazyTypeIdentifier<T> extends TAnyTypeIdentifier {
+export interface LazyTypeIdentifier<T> extends AnyTypeIdentifier {
     id: string,
     isLazy: true,
     isMulti: false,
-    multi: TLazyMultiTypeIdentifier<T>
+    multi: LazyMultiTypeIdentifier<T>
 }
 
-export interface TLazyMultiTypeIdentifier<T> extends TAnyTypeIdentifier {
+export interface LazyMultiTypeIdentifier<T> extends AnyTypeIdentifier {
     id: string,
     isLazy: true,
     isMulti: true
 }
 
-export interface TScopedTypeIdentifier<T, Scope extends TImplementationScope> extends TAnyTypeIdentifier {
+export interface ScopedTypeIdentifier<T, Scope extends ImplementationScope> extends AnyTypeIdentifier {
     id: string,
     scope: Scope
 }

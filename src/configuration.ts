@@ -1,22 +1,30 @@
-import { TConfiguration } from "./configuration.types";
+import { ContainerConfiguration } from "./configuration.types";
 
-export function createConfiguration(configuration: Partial<TConfiguration>): TConfiguration {
+export function createConfiguration() {
+    const configuration: ContainerConfiguration = {
+        defaultScope: 'transient',
+        showCircularDependencyError: true,
+        showLazyPotentialCircularWarning: false,
+        showSingletonPotentialCircularWarning: true
+    };
+
+    function configure(userConfiguration: Partial<ContainerConfiguration>) {
+        if (userConfiguration.defaultScope != null) {
+            configuration.defaultScope = userConfiguration.defaultScope;
+        }
+        if (userConfiguration.showCircularDependencyError != null) {
+            configuration.showCircularDependencyError = userConfiguration.showCircularDependencyError;
+        }
+        if (userConfiguration.showLazyPotentialCircularWarning != null) {
+            configuration.showLazyPotentialCircularWarning = userConfiguration.showLazyPotentialCircularWarning;
+        }
+        if (userConfiguration.showSingletonPotentialCircularWarning != null) {
+            configuration.showSingletonPotentialCircularWarning = userConfiguration.showSingletonPotentialCircularWarning;
+        }
+    }
+
     return {
-        defaultScope:
-            configuration.defaultScope != null ?
-            configuration.defaultScope :
-            'transient',
-        showCircularDependencyError:
-            configuration.showCircularDependencyError != null ?
-            configuration.showCircularDependencyError :
-            true,
-        showLazyPotentialCircularWarning:
-            configuration.showLazyPotentialCircularWarning != null ?
-            configuration.showLazyPotentialCircularWarning :
-            false,
-        showSingletonPotentialCircularWarning:
-            configuration.showSingletonPotentialCircularWarning != null ?
-            configuration.showSingletonPotentialCircularWarning :
-            true
+        configuration,
+        configure
     }
 }

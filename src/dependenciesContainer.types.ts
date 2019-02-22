@@ -1,9 +1,9 @@
-export type TDependencyDescriptor = {
+export type DependencyDescriptor = {
     isLazy: boolean,
     isMulti: boolean,
     id: string
 };
 
-export type TDependencies = {
-    [id: string]: TDependencyDescriptor[]
+export type DependenciesById = {
+    [id: string]: DependencyDescriptor[]
 };

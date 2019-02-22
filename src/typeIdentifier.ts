@@ -1,50 +1,50 @@
-import { TMultiTypeIdentifier, TLazyTypeIdentifier, TScopedTypeIdentifier, TLazyMultiTypeIdentifier, TTypeIdentifier } from "./typeContainer.types";
-import { TImplementationScope } from "./implementationsContainer.types";
+import { MultiTypeIdentifier, LazyTypeIdentifier, ScopedTypeIdentifier, LazyMultiTypeIdentifier, TypeIdentifier } from "./typeContainer.types";
+import { ImplementationScope } from "./implementationsContainer.types";
 
-export function createTypeIdentifier<T>(id: string, isLazy: boolean, isMulti: boolean, scope: TImplementationScope): TTypeIdentifier<T> {
+export function createTypeIdentifier<T>(id: string, isLazy: boolean, isMulti: boolean, scope: ImplementationScope): TypeIdentifier<T> {
     return {
         id,
         isLazy,
         isMulti,
         scope,
-        get multi(): TMultiTypeIdentifier<T> {
+        get multi(): MultiTypeIdentifier<T> {
             return createMultiTypeIdentifier(id);
         },
-        get lazy(): TLazyTypeIdentifier<T> {
+        get lazy(): LazyTypeIdentifier<T> {
             return createLazyTypeIdentifier(id);
         },
-        get singleton(): TScopedTypeIdentifier<T, 'singleton'> {
+        get singleton(): ScopedTypeIdentifier<T, 'singleton'> {
             return createScopedTypeIdentifier(id, 'singleton');
         },
-        get transient(): TScopedTypeIdentifier<T, 'transient'> {
+        get transient(): ScopedTypeIdentifier<T, 'transient'> {
             return createScopedTypeIdentifier(id, 'transient');
         }
     }
 }
 
-function createMultiTypeIdentifier<T>(id: string): TMultiTypeIdentifier<T> {
+function createMultiTypeIdentifier<T>(id: string): MultiTypeIdentifier<T> {
     return {
         id,
         isLazy: false,
         isMulti: true,
-        get lazy(): TLazyMultiTypeIdentifier<T> {
+        get lazy(): LazyMultiTypeIdentifier<T> {
             return createLazyMultiTypeIdentifier(id);
         }
     }
 }
 
-function createLazyTypeIdentifier<T>(id: string): TLazyTypeIdentifier<T> {
+function createLazyTypeIdentifier<T>(id: string): LazyTypeIdentifier<T> {
     return {
         id,
         isLazy: true,
         isMulti: false,
-        get multi(): TLazyMultiTypeIdentifier<T> {
+        get multi(): LazyMultiTypeIdentifier<T> {
             return createLazyMultiTypeIdentifier(id);
         }
     }
 }
 
-function createLazyMultiTypeIdentifier<T>(id: string): TLazyMultiTypeIdentifier<T> {
+function createLazyMultiTypeIdentifier<T>(id: string): LazyMultiTypeIdentifier<T> {
     return {
         id,
         isLazy: true,
@@ -52,7 +52,7 @@ function createLazyMultiTypeIdentifier<T>(id: string): TLazyMultiTypeIdentifier<
     }
 }
 
-function createScopedTypeIdentifier<T, Scope extends TImplementationScope>(id: string, scope: Scope): TScopedTypeIdentifier<T, Scope> {
+function createScopedTypeIdentifier<T, Scope extends ImplementationScope>(id: string, scope: Scope): ScopedTypeIdentifier<T, Scope> {
     return {
         id,
         scope

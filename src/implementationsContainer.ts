@@ -1,23 +1,23 @@
-import { TConfiguration } from "./configuration.types";
-import { TImplementationMap, TAnyImplementation, TImplementationScope } from "./implementationsContainer.types";
-import { TypeIdentifierMap, TTypeIdentifier } from "./typeContainer.types";
+import { ContainerConfiguration } from "./configuration.types";
+import { ImplementationById, AnyImplementation, ImplementationScope } from "./implementationsContainer.types";
+import { TypeIdentifierById, TypeIdentifier } from "./typeContainer.types";
 import { TYPE_ID } from "./typeContainer.cnst";
 import { IS_SINGLETON } from "./implementationsContainer.cnst";
 
 export function createImplementationsContainer(
-    configuration: TConfiguration,
-    typeIdentifiersById: TypeIdentifierMap
+    configuration: ContainerConfiguration,
+    typeIdentifiersById: TypeIdentifierById
 ) {
-    const implementationsById: TImplementationMap = {};
+    const implementationsById: ImplementationById = {};
 
-    function addImplementation(id: string, implementation: TAnyImplementation) {
+    function addImplementation(id: string, implementation: AnyImplementation) {
         if (!implementationsById[id]) {
             implementationsById[id] = [];
         }
         implementationsById[id].push(implementation);
     }
 
-    function registerImplementation(id: string, implementation: TAnyImplementation, userScope?: TImplementationScope) {
+    function registerImplementation(id: string, implementation: AnyImplementation, userScope?: ImplementationScope) {
         const scope = userScope ? userScope : configuration.defaultScope;
         implementation[TYPE_ID] = id;
         if (scope === 'singleton') {
@@ -32,11 +32,18 @@ export function createImplementationsContainer(
         }
     }
 
-    function getImplementation<T>(type: TTypeIdentifier<T>): TAnyImplementation {
+    function getImplementation<T>(type: TypeIdentifier<T>): AnyImplementation {
         return getImplementations(type)[0];
     }
 
-    function getImplementations<T>(type: TTypeIdentifier<T>): TAnyImplementation[] {
+    function getImplementations<T>(type: TypeIdentifier<T>): AnyImplementation[] {
         return implementationsById[type.id];
+    }
+
+    return {
+        implementationsById,
+        getImplementation,
+        getImplementations,
+        registerImplementation
     }
 }
