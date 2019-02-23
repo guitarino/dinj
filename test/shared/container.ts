@@ -1,7 +1,7 @@
 import { createDecorators } from '../../build/babel-legacy-decorators';
-import { createContainer, TContainer } from "../../build";
+import { createContainer, Container } from "../../build";
 
-export const container: TContainer = createContainer();
+export const container: Container = createContainer();
 export const {
     get,
     type,

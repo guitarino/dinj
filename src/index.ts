@@ -1,4 +1,3 @@
-export * from './container';
 export * from './createImplementation';
+export * from './container';
 export * from './types';
-export * from './createContainer';

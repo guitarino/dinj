@@ -1,6 +1,6 @@
-import { Lazy } from "./types";
+import { Lazy } from "./lazy.types";
 
-export function createLazy<TType>(getImplementation): Lazy<TType> {
+export function createLazy<T>(getImplementation): Lazy<T> {
     let implementation;
 
     return {

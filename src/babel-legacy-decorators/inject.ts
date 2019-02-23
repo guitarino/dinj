@@ -1,11 +1,12 @@
-import { TDependencyDescriptor, TInjectDecoratorKlassArg } from "../types";
+import { InjectImplementationArg } from "../decorators.types";
+import { DependencyDescriptor } from "../dependenciesContainer.types";
 
 export const DEP_NAME = '_typeinjectDependencies';
 
 export function createInjectDecorator() {
-    return function inject<TInjectDecoratorArgs extends any[]>(...dependencyTypes: TInjectDecoratorArgs) {
-        return function<T>(klass: TInjectDecoratorKlassArg<T, TInjectDecoratorArgs>): void {
-            const userDependencies: TDependencyDescriptor[] = [];
+    return function inject<InjectArgs extends any[]>(...dependencyTypes: InjectArgs) {
+        return function<T>(userImplementation: InjectImplementationArg<T, InjectArgs>): void {
+            const userDependencies: DependencyDescriptor[] = [];
             for (let i = 0; i < dependencyTypes.length; i++) {
                 const type = dependencyTypes[i];
                 userDependencies.push({
@@ -14,7 +15,7 @@ export function createInjectDecorator() {
                     isMulti: type.isMulti
                 });
             }
-            klass[DEP_NAME] = userDependencies;
+            userImplementation[DEP_NAME] = userDependencies;
         }
     }
 }

@@ -1,17 +1,20 @@
-import { TAnyImplementation, TDependencyDescriptor, TContainerInternal, TDependencyDecoratorIdentifierArg } from "./types";
+import { ContainerInternal } from "./container.types";
+import { DependencyDecoratorIdentifierArg } from "./decorators.types";
+import { DependencyDescriptor } from "./dependenciesContainer.types";
+import { AnyImplementation } from "./implementationsContainer.types";
 
-export function createImplementation<TInterface>(
-    container: TContainerInternal,
-    userType: TDependencyDecoratorIdentifierArg<TInterface>,
-    dependencies: TDependencyDescriptor[],
-    klass: TAnyImplementation
-): TAnyImplementation {
+export function createImplementation<T>(
+    container: ContainerInternal,
+    userType: DependencyDecoratorIdentifierArg<T>,
+    dependencies: DependencyDescriptor[],
+    userImplementation: AnyImplementation
+): AnyImplementation {
     const type = container.typeName(
-        container.generateUniqueImplementationTypeName(klass.name || ''),
+        container.generateUniqueImplementationTypeName(userImplementation.name || ''),
         { id: userType.id }
     );
     container.registerDependencies(type.id, dependencies);
-    class Dependency extends klass {
+    class Dependency extends userImplementation {
         constructor(...args) {
             const depArgs = container.getConstructorArgs(type.id);
             super(...depArgs, ...args);
