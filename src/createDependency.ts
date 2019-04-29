@@ -30,15 +30,47 @@ export type TypeMultiLazy<Interface> = {
     isLazy: true
 }
 
-export type TypeInjected<Interface> = Type<Interface> | TypeLazy<Interface> | TypeMultiLazy<Interface>;
-
 export type Scope = 'singleton' | 'transient';
 
 export type Lazy<T> = {
     value: T
 }
 
-export type getInjectedArgFromType<T> =
+export type TypeInjected<Interface> =
+    Type<Interface> |
+    TypeMulti<Interface> |
+    TypeLazy<Interface> |
+    TypeMultiLazy<Interface>;
+
+export type getInterfaceFromType<T> =
+    T extends Type<infer Interface> ? Interface :
+    never;
+
+export type getConstructorArgsFromInjectedTuple<InjectTuple> = {
+    [i in keyof InjectTuple]: getConstructorArgFromType<InjectTuple[i]>
+}
+
+export type getInterfacesTupleFromImplementsTuple<ImplementsTuple> = {
+    [i in keyof ImplementsTuple]: getInterfaceFromType<ImplementsTuple[i]>
+}
+
+export type UnionToIntersection<Union> = (
+    Union extends any
+        ? (argument: Union) => void
+        : never
+) extends (argument: infer Intersection) => void
+    ? Intersection
+    : never;
+
+export type getInterfaceExtendingInterfacesTuple<InterfacesTuple> =
+    UnionToIntersection<
+        InterfacesTuple[keyof getObjectFromTuple<InterfacesTuple>]
+    >;
+
+export type getInterfaceFromImplementsTuple<ImplementsTuple> =
+    getInterfaceExtendingInterfacesTuple<getInterfacesTupleFromImplementsTuple<ImplementsTuple>>;
+
+export type getConstructorArgFromType<T> =
     T extends Type<infer Interface> ? Interface :
     T extends TypeMulti<infer Interface> ? Interface[] :
     T extends TypeLazy<infer Interface> ? Lazy<Interface> :
@@ -49,29 +81,34 @@ export type getObjectFromTuple<T> = {
     [i in Exclude<keyof T, keyof []>]: T[i]
 }
 
-export type UserClass<UserConstructorArgs extends Array<any>, UserInstanceType> = {
+export type UserClass<
+    UserConstructorArgs extends getConstructorArgsFromInjectedTuple<InjectTuple>,
+    UserInstanceType extends getInterfaceFromImplementsTuple<ImplementsTuple>,
+    ImplementsTuple extends Array<Type<any>>,
+    InjectTuple extends Array<TypeInjected<any>>,
+> = {
     new(...args: UserConstructorArgs): UserInstanceType;
 }
 
 export type DependencyConfiguration<
-    UserConstructorArgs extends Array<any>,
-    UserInstanceType,
-    ImplementsTuple extends Array<TypeInjected<any>>,
-    InjectTuple extends Array<TypeInjected<any>>
+    UserConstructorArgs extends getConstructorArgsFromInjectedTuple<InjectTuple>,
+    UserInstanceType extends getInterfaceFromImplementsTuple<ImplementsTuple>,
+    ImplementsTuple extends Array<Type<any>>,
+    InjectTuple extends Array<TypeInjected<any>>,
 > = {
     scope?: Scope,
     implements?: ImplementsTuple,
     inject: InjectTuple,
-    class: UserClass<UserConstructorArgs, UserInstanceType>
+    class: UserClass<UserConstructorArgs, UserInstanceType, ImplementsTuple, InjectTuple>
 }
 
 export function getCreateDependency(container: Container) {
 
     return function createDependency<
-        UserConstructorArgs extends Array<any>,
-        UserInstanceType,
+        UserConstructorArgs extends getConstructorArgsFromInjectedTuple<InjectTuple>,
+        UserInstanceType extends getInterfaceFromImplementsTuple<ImplementsTuple>,
         ImplementsTuple extends Array<Type<any>>,
-        InjectTuple extends Array<TypeInjected<any>>
+        InjectTuple extends Array<TypeInjected<any>>,
     >(dependencyConfiguration: DependencyConfiguration<
         UserConstructorArgs,
         UserInstanceType,
@@ -89,10 +126,10 @@ function magic(): any {}
 const createDependency = getCreateDependency({});
 
 export class A implements IA, IC, ID {
-    b: IB[];
+    b: Lazy<IB[]>;
     x: string;
 
-    constructor(b: IB[], x: string) {
+    constructor(b: Lazy<IB[]>, x: string) {
         this.b = b;
         this.x = x;
     }
