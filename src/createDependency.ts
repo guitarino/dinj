@@ -93,13 +93,46 @@ export type UserClass<
     new(...args: UserConstructorArgs): UserInstanceType;
 }
 
-export type InjectedClass<
-    UserConstructorArgs extends getConstructorArgsFromInjectedTuple<InjectTuple>,
-    UserInstanceType extends getInterfaceFromImplementsTuple<ImplementsTuple>,
-    ImplementsTuple extends Array<Type<any>>,
-    InjectTuple extends Array<TypeInjected<any>>
+export type removeFirstTupleItem<Tuple extends Array<any>> =
+    ((...tuple: Tuple) => any) extends ((first: any, ...removed: infer Result) => any)
+        ? Result
+        : never;
+
+export type removeFirstTupleItems<
+    Tuple extends Array<any>,
+    N extends SupportedNumbers
 > = {
-    new(...args: UserConstructorArgs): UserInstanceType;
+    finished: Tuple,
+    continuing: removeFirstTupleItems<removeFirstTupleItem<Tuple>, Prev<N>>
+}[
+    Tuple extends []
+        ? 'finished'
+        : N extends 0
+            ? 'finished'
+            : 'continuing'
+];
+
+export type SupportedNumbers = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11;
+
+export type Prev<T extends SupportedNumbers> = [never, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10][T];
+
+export type InjectedClassArguments<
+    UserConstructorArgs extends Array<any>,
+    InjectTuple extends Array<any>,
+    Result = InjectTuple['length'] extends SupportedNumbers
+        ? removeFirstTupleItems<
+            UserConstructorArgs,
+            InjectTuple['length']
+        >
+        : any
+> = Result extends Array<any> ? Result : never;
+
+export type InjectedClass<
+    UserConstructorArgs extends Array<any>,
+    InjectTuple extends Array<any>,
+    UserInstanceType,
+> = {
+    new(...args: InjectedClassArguments<UserConstructorArgs, InjectTuple>): UserInstanceType;
 }
 
 export type DependencyReturn<
@@ -122,7 +155,7 @@ export type DependencyReturn<
     >(
         clss: UserClass<UserConstructorArgs, UserInstanceType, CurrentImplementsTuple, CurrentInjectTuple>
     ) =>
-        InjectedClass<UserConstructorArgs, UserInstanceType, CurrentImplementsTuple, CurrentInjectTuple>;
+        InjectedClass<UserConstructorArgs, CurrentInjectTuple, UserInstanceType>;
 }
 
 export function createDependencyConfigurator(container: Container) {
@@ -144,7 +177,7 @@ export class A implements IA, IC, ID {
     b: Lazy<IB[]>;
     x: number;
 
-    constructor(b: Lazy<IB[]>, x: number) {
+    constructor(b: Lazy<IB[]>, x: number, y: 'hello there') {
         this.b = b;
         this.x = x;
     }
@@ -168,14 +201,14 @@ const InjectedA = createDependency()
     .from(A)
 ;
 
-const ia = new InjectedA(100000);
+const ia = new InjectedA(100000, 'hello there');
 
-export type Y = { 0: 'asd', 1: 'dsa' };
+// export type Y = { 0: 'asd', 1: 'dsa' };
 
-export type Z = ['asd', 'dsa', 'bdsa' ];
+// export type Z = ['asd', 'dsa', 'bdsa' ];
 
-export type X = Z extends Y ? 'yes' : 'no';
+// export type X = Z extends Y ? 'yes' : 'no';
 
-type A1 = getConstructorArgsFromInjectedTuple<[TypeMultiLazy<IB>, TypeLazy<IA>]>;
+// type A1 = getConstructorArgsFromInjectedTuple<[TypeMultiLazy<IB>, TypeLazy<IA>]>;
 
-type A2 = A1[1];
+// type A2 = A1[1];
