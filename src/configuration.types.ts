@@ -1,8 +1,5 @@
-import { ImplementationScope } from "./implementationsContainer.types";
+export type Scope = 'singleton' | 'transient';
 
 export type ContainerConfiguration = {
-    defaultScope: ImplementationScope,
-    showCircularDependencyError: boolean,
-    showLazyPotentialCircularWarning: boolean
-    showSingletonPotentialCircularWarning: boolean
-};
+    defaultScope: Scope
+}
