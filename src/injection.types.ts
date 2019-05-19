@@ -2,7 +2,8 @@ import { Type, TypeMulti, TypeLazy, TypeMultiLazy } from "./type.types";
 import { removeFirstTupleItems, SupportedNumbers } from "./tuple.types";
 import { UnionToIntersection } from "./union.types";
 import { Lazy } from "./lazy.types";
-import { Scope } from "./configuration.types";
+
+export type Scope = 'singleton' | 'transient';
 
 export type NewableUserClass<InstanceType = any, ConstructorArguments extends Array<any> = Array<any>> = {
     new(...constructorArguments: ConstructorArguments): InstanceType;
@@ -11,10 +12,12 @@ export type NewableUserClass<InstanceType = any, ConstructorArguments extends Ar
 export type InjectedClassFromInterface<Interface = any, ConstructorArguments extends Array<any> = Array<any>> = {
     new(...args: ConstructorArguments): Interface,
     scope: Scope,
-    instance?: Interface
+    instance?: Interface,
+    userClass: NewableUserClass,
+    injectedTypes: InjectedTypes
 }
 
-export type TypeInjected<Interface> =
+export type TypeInjected<Interface = any> =
     Type<Interface> |
     TypeMulti<Interface> |
     TypeLazy<Interface> |

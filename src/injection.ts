@@ -1,12 +1,12 @@
-import { InjectedTypes, getInjectedArgsFromInjectedTuple, TypeInjected, InjectedClassFromInterface, NewableUserClass } from "./injection.types";
+import { InjectedTypes, getInjectedArgsFromInjectedTuple, TypeInjected, InjectedClassFromInterface, NewableUserClass, Scope } from "./injection.types";
 import { createLazy } from "./lazy";
-import { Scope } from "./configuration.types";
 
 export function createInjectedClass<UserClassType extends NewableUserClass>(ProvidedClass: UserClassType, providedScope: Scope | undefined, defaultScope: Scope, injectedTypes: InjectedTypes): InjectedClassFromInterface {
     return class InjectedClass extends ProvidedClass {
         static scope: Scope = providedScope || defaultScope;
-
         static instance: InjectedClass;
+        static userClass: NewableUserClass = ProvidedClass;
+        static injectedTypes: InjectedTypes = injectedTypes;
         
         constructor(...args) {
             const dependencies = getInjectedArguments(injectedTypes);

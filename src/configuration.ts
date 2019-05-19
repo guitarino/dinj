@@ -1,47 +1,37 @@
-import { ImplementedTypes, InjectedTypes, getInjectedArgsFromInjectedTuple, getInterfaceFromImplementsTuple, UserClass } from "./injection.types";
 import { createInjectedClass } from "./injection";
 import { registerInjectedClass } from "./type";
-import { ContainerConfiguration, Scope } from "./configuration.types";
+import { CreateConfigureDependencyReturn } from "./configuration.types";
+import { ContainerConfiguration } from "./container.types";
 
-export function createConfigureDependency(containerConfiguration: ContainerConfiguration) {
-    return function configureDependency<
-        CurrentScope extends Scope | undefined = undefined,
-        CurrentImplementsTuple extends ImplementedTypes = [],
-        CurrentInjectTuple extends InjectedTypes = []
-    >(configuration: {
-        implements: CurrentImplementsTuple | [],
-        inject: CurrentInjectTuple | [],
-        scope: CurrentScope | undefined
-    } = {
+export function createConfigureDependency(containerConfiguration: ContainerConfiguration): CreateConfigureDependencyReturn {
+    return function configureDependency(configuration = {
         implements: [],
         inject: [],
         scope: undefined
     }) {
         return {
-            implements<ImplementsTuple extends ImplementedTypes>(...implementedTypes: ImplementsTuple) {
+            implements(...implementedTypes) {
                 return configureDependency({
                     implements: implementedTypes,
                     inject: configuration.inject,
                     scope: configuration.scope
                 });
             },
-            inject<InjectTuple extends InjectedTypes>(...injectedTypes: InjectTuple) {
+            inject(...injectedTypes) {
                 return configureDependency({
                     implements: configuration.implements,
                     inject: injectedTypes,
                     scope: configuration.scope
                 });
             },
-            scope<NewScope extends Scope>(scope: NewScope) {
+            scope(scope) {
                 return configureDependency({
                     implements: configuration.implements,
                     inject: configuration.inject,
                     scope: scope
                 });
             },
-            create<UserConstructorArgs extends getInjectedArgsFromInjectedTuple<CurrentInjectTuple>, UserInstanceType extends getInterfaceFromImplementsTuple<CurrentImplementsTuple>>(
-                userClass: UserClass<UserConstructorArgs, UserInstanceType, CurrentImplementsTuple, CurrentInjectTuple>
-            ) {
+            create(userClass) {
                 const injectedClass = createInjectedClass(userClass, configuration.scope, containerConfiguration.defaultScope, configuration.inject);
                 registerInjectedClass(injectedClass, configuration.implements);
                 return injectedClass;
