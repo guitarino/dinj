@@ -1,8 +1,10 @@
 import expect from "expect.js";
-import { type, dependency, inject, get } from "./shared/container";
+import { type, configureDependency, get } from "./shared/container";
 
 const IA = type<IA>();
 interface IA {
+    n1: number,
+    n2: number,
     getB(): IB;
 }
 
@@ -11,17 +13,22 @@ interface IB {
 
 }
 
-@dependency(IB)
 class B implements IB {
 }
 
-@dependency(IA)
-@inject(IB)
+configureDependency()
+    .implements(IB)
+    .create(B);
+
 class A implements IA {
     private readonly b: IB;
+    n1: number;
+    n2: number;
 
-    constructor(b: IB) {
+    constructor(b: IB, n1: number, n2: number) {
         this.b = b;
+        this.n1 = n1;
+        this.n2 = n2;
     }
 
     getB() {
@@ -29,12 +36,22 @@ class A implements IA {
     }
 }
 
+configureDependency()
+    .implements(IA)
+    .inject(IB)
+    .create(A);
+
 describe(`Regular dependency injection`, () => {
     describe(`A -> B`, () => {
-        const a = get(IA);
+        const a = get(IA, 100, 500);
 
         it(`"A" is of correct class`, () => {
             expect(a instanceof A).to.be(true);
+        });
+
+        it(`Arguments to "A" are passed down correctly`, () => {
+            expect(a.n1).to.be(100);
+            expect(a.n2).to.be(500);
         });
 
         it(`"B" is of correct class`, () => {

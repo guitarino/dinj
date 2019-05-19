@@ -1,6 +1,6 @@
 {
   "name": "typeinject",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Dependency Injection Container",
   "main": "index.js",
   "types": "index.d.ts",
@@ -63,7 +63,7 @@
     "nyc": "^13.1.0",
     "rimraf": "^2.6.3",
     "sinon": "^7.2.3",
-    "typescript": "^3.2.4"
+    "typescript": "^3.4.5"
   },
   "dependencies": {
     "@babel/runtime": "^7.3.1"

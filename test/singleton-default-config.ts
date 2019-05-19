@@ -1,10 +1,6 @@
 import { fake } from "sinon";
 import expect from "expect.js";
-import { type, dependency, inject, get, configure } from "./shared/container";
-
-configure({
-    defaultScope: 'singleton'
-});
+import { type, configureDependency, get } from "./shared/container-singleton";
 
 const IA = type<IA>();
 interface IA {
@@ -20,8 +16,6 @@ interface IC {
     getAfromC(): IA;
 }
 
-@dependency(IB.transient)
-@inject(IA)
 class B implements IB {
     private readonly a: IA;
 
@@ -34,8 +28,12 @@ class B implements IB {
     }
 }
 
-@dependency(IC.transient)
-@inject(IA)
+configureDependency()
+    .implements(IB)
+    .inject(IA)
+    .scope('transient')
+    .create(B);
+
 class C implements IC {
     private readonly a: IA;
 
@@ -48,14 +46,23 @@ class C implements IC {
     }
 }
 
+configureDependency()
+    .implements(IC)
+    .inject(IA)
+    .scope('transient')
+    .create(C);
+
 const aConstructorFake = fake();
 
-@dependency(IA)
 class A implements IA {
     constructor() {
         aConstructorFake();
     }
 }
+
+configureDependency()
+    .implements(IA)
+    .create(A);
 
 describe(`Sinleton by default dependency registration`, () => {
     describe(`B.transient -> A, C.transient -> A`, () => {

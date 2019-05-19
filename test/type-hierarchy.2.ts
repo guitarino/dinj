@@ -1,4 +1,4 @@
-import { type, dependency, inject, get } from "./shared/container";
+import { type, configureDependency, get } from "./shared/container";
 import expect from "expect.js";
 
 const IA = type<IA>();
@@ -16,14 +16,16 @@ interface IC {
     getA(): IA;
 }
 
-@dependency(IB.singleton)
 class B implements IB {
     aMethod() { }
     bMethod() { }
 }
 
-@dependency(IC.transient)
-@inject(IA)
+configureDependency()
+    .implements(IB)
+    .scope('singleton')
+    .create(B);
+
 class C implements IC {
     private readonly a: IA;
 
@@ -35,6 +37,12 @@ class C implements IC {
         return this.a;
     }
 }
+
+configureDependency()
+    .implements(IC)
+    .inject(IA)
+    .scope('transient')
+    .create(C);
 
 describe(`Type hierarchy singleton dependency`, () => {
     describe(`B extends A, register B.singleton, 2x(C -> A)`, () => {
