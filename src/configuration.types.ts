@@ -5,7 +5,7 @@ export type CreateConfigureDependencyReturn =
         CurrentScope extends Scope | undefined = undefined,
         CurrentImplementsTuple extends ImplementedTypes = [],
         CurrentInjectTuple extends InjectedTypes = []
-    >(configuration: {
+    >(configuration?: {
         implements: CurrentImplementsTuple | [],
         inject: CurrentInjectTuple | [],
         scope: CurrentScope | undefined

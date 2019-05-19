@@ -6,8 +6,18 @@ interface IA {
     aMethod();
 }
 
-const IB = type<IB>(IA);
-interface IB extends IA {
+const IE = type<IE>(IA);
+interface IE extends IA {
+    eMethod();
+}
+
+const ID = type<ID>(IE);
+interface ID extends IE {
+    dMethod();
+}
+
+const IB = type<IB>(ID);
+interface IB extends ID {
     bMethod();
 }
 
@@ -19,6 +29,8 @@ interface IC {
 class B implements IB {
     aMethod() { }
     bMethod() { }
+    dMethod() { }
+    eMethod() { }
 }
 
 configureDependency()
@@ -43,7 +55,7 @@ configureDependency()
     .create(C);
 
 describe(`Type hierarchy dependency`, () => {
-    describe(`B extends A, register B, C -> A`, () => {
+    describe(`B extends D, D extends E, E extends A, register B, C -> A`, () => {
         const c = get(IC);
         const a = c.getA();
 

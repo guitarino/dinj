@@ -1,7 +1,7 @@
 import { fake } from "sinon";
 import expect from "expect.js";
-import { type, dependency, inject, get } from "./shared/container";
-import { Lazy } from "../src";
+import { type, configureDependency, get } from "./shared/container";
+import { Lazy } from "../build/lazy.types";
 
 const IA = type<IA>();
 interface IA {
@@ -14,24 +14,28 @@ interface IB {
 
 const cConstructorFake = fake();
 
-@dependency(IB)
 class C implements IB {
     constructor() {
         cConstructorFake();
     }
 }
 
+configureDependency()
+    .implements(IB)
+    .create(C);
+
 const dConstructorFake = fake();
 
-@dependency(IB)
 class D implements IB {
     constructor() {
         dConstructorFake();
     }
 }
 
-@dependency(IA)
-@inject(IB.multi.lazy)
+configureDependency()
+    .implements(IB)
+    .create(D);
+
 class A implements IA {
     private readonly bList: Lazy<IB[]>;
 
@@ -43,6 +47,11 @@ class A implements IA {
         return this.bList.value;
     }
 }
+
+configureDependency()
+    .implements(IA)
+    .inject(IB.multi.lazy)
+    .create(A);
 
 describe(`Lazy multi dependency injection (multi.lazy)`, () => {
     describe(`A -> Lazy<B[] {C, D}>`, () => {

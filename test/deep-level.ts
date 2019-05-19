@@ -1,6 +1,6 @@
 import { fake } from "sinon";
 import expect from "expect.js";
-import { type, dependency, inject, get } from "./shared/container";
+import { type, configureDependency, get } from "./shared/container";
 
 const IA = type<IA>();
 interface IA {
@@ -24,8 +24,6 @@ interface ID {
 
 const aConstructorFake = fake();
 
-@dependency(IA)
-@inject(IB)
 class A implements IA {
     private readonly b: IB;
     
@@ -39,10 +37,13 @@ class A implements IA {
     }
 }
 
+configureDependency()
+    .implements(IA)
+    .inject(IB)
+    .create(A);
+
 const bConstructorFake = fake();
 
-@dependency(IB)
-@inject(IC)
 class B implements IB {
     private readonly c: IC;
     
@@ -56,10 +57,13 @@ class B implements IB {
     }
 }
 
+configureDependency()
+    .implements(IB)
+    .inject(IC)
+    .create(B);
+
 const cConstructorFake = fake();
 
-@dependency(IC)
-@inject(ID)
 class C implements IC {
     private readonly d: ID;
     
@@ -73,14 +77,22 @@ class C implements IC {
     }
 }
 
+configureDependency()
+    .implements(IC)
+    .inject(ID)
+    .create(C);
+
 const dConstructorFake = fake();
 
-@dependency(ID)
 class D implements ID {
     constructor() {
         dConstructorFake();
     }
 }
+
+configureDependency()
+    .implements(ID)
+    .create(D);
 
 describe(`Deeply nested dependency tree`, () => {
     describe(`A -> B -> C -> D`, () => {

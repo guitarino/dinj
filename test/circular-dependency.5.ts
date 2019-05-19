@@ -1,10 +1,7 @@
-import { type, dependency, inject, hasCircularDependencies } from "./shared/container";
+import { type, configureDependency, container } from "./shared/container";
 import expect from "expect.js";
-import { fake } from "sinon";
-import { containsDependencyTree } from "./shared/circular";
-
-const consoleWarn = fake();
-global.console.warn = consoleWarn;
+import { detectCircularDependency } from "../build/circular";
+import { Lazy } from "../build/lazy.types";
 
 const IA = type<IA>();
 interface IA {
@@ -26,22 +23,24 @@ interface ID {
     getB(): IB;
 }
 
-@dependency(IA)
-@inject(IB)
 class A implements IA {
-    private b: IB;
+    private b: Lazy<IB>;
 
-    constructor(b: IB) {
+    constructor(b: Lazy<IB>) {
         this.b = b;
     }
 
     getB(): IB {
-        return this.b;
+        return this.b.value;
     }
 }
 
-@dependency(IB.singleton)
-@inject(IC)
+configureDependency()
+    .implements(IA)
+    .inject(IB.lazy)
+    .scope('singleton')
+    .create(A);
+
 class B implements IB {
     private c: IC;
 
@@ -54,8 +53,11 @@ class B implements IB {
     }
 }
 
-@dependency(IC)
-@inject(ID)
+configureDependency()
+    .implements(IB)
+    .inject(IC)
+    .create(B);
+
 class C implements IC {
     private d: ID;
 
@@ -68,8 +70,11 @@ class C implements IC {
     }
 }
 
-@dependency(ID)
-@inject(IB)
+configureDependency()
+    .implements(IC)
+    .inject(ID)
+    .create(C);
+
 class D implements ID {
     private b: IB;
 
@@ -82,16 +87,28 @@ class D implements ID {
     }
 }
 
-describe(`Circular dependency A -> B.singleton -> C -> D -> B`, () => {
-    const isCircular = hasCircularDependencies();
-    const warnMessage = consoleWarn.args[0][0];
+configureDependency()
+    .implements(ID)
+    .inject(IB)
+    .create(D);
 
-    it(`detects a potential circular dependency`, () => {
-        expect(isCircular).to.be(false);
-        expect(warnMessage.indexOf('Potential circular dependency detected') >= 0).to.be(true);
+describe(`Circular dependency A.singleton -> Lazy<B> -> C -> D -> B`, () => {
+    const circular = detectCircularDependency(container);
+
+    console.log(circular);
+
+    it(`detects a circular dependency`, () => {
+        expect(circular.isCircular).to.be(true);
+
+        expect(circular.isLazyCircular).to.be(false);
+        expect(circular.isSingletonCircular).to.be(false);
+        expect(circular.lazyCircularPathways).to.eql([]);
+        expect(circular.singletonCircularPathways).to.eql([]);
     });
 
-    it(`prints a warning message with path B -> C -> D -> B`, () => {
-        expect(containsDependencyTree(warnMessage, ['B', 'C', 'D', 'B'])).to.be(true);
+    it(`path is B -> C -> D -> B`, () => {
+        expect(circular.circularPathways).to.eql([
+            [B, C, D, B]
+        ]);
     });
 });

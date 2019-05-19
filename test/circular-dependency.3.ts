@@ -1,10 +1,6 @@
-import { type, dependency, inject, hasCircularDependencies } from "./shared/container";
+import { type, configureDependency, container } from "./shared/container";
 import expect from "expect.js";
-import { fake } from "sinon";
-import { containsDependencyTree } from "./shared/circular";
-
-const consoleError = fake();
-global.console.error = consoleError;
+import { detectCircularDependency } from "../build/circular";
 
 const IA = type<IA>();
 interface IA {
@@ -13,21 +9,9 @@ interface IA {
 
 const IB = type<IB>();
 interface IB {
-    getC(): IC;
+    getA(): IA;
 }
 
-const IC = type<IC>();
-interface IC {
-    getD(): ID;
-}
-
-const ID = type<ID>();
-interface ID {
-    getB(): IB;
-}
-
-@dependency(IA)
-@inject(IB)
 class A implements IA {
     private b: IB;
 
@@ -40,58 +24,43 @@ class A implements IA {
     }
 }
 
-@dependency(IB)
-@inject(IC)
+configureDependency()
+    .implements(IA)
+    .inject(IB)
+    .create(A);
+
 class B implements IB {
-    private c: IC;
+    private a: IA;
 
-    constructor(c: IC) {
-        this.c = c;
+    constructor(a: IA) {
+        this.a = a;
     }
 
-    getC(): IC {
-        return this.c;
-    }
-}
-
-@dependency(IC)
-@inject(ID)
-class C implements IC {
-    private d: ID;
-
-    constructor(d: ID) {
-        this.d = d;
-    }
-
-    getD(): ID {
-        return this.d;
+    getA(): IA {
+        return this.a;
     }
 }
 
-@dependency(ID)
-@inject(IB)
-class D implements ID {
-    private b: IB;
+configureDependency()
+    .implements(IB)
+    .inject(IA)
+    .create(B);
 
-    constructor(b: IB) {
-        this.b = b;
-    }
-
-    getB(): IB {
-        return this.b;
-    }
-}
-
-describe(`Circular dependency A -> B -> C -> D -> B`, () => {
-    const isCircular = hasCircularDependencies();
-    const errorMessage = consoleError.args[0][0];
+describe(`Circular dependency A -> B -> A`, () => {
+    const circular = detectCircularDependency(container);
 
     it(`detects a circular dependency`, () => {
-        expect(isCircular).to.be(true);
-        expect(errorMessage.indexOf('Circular dependency detected') >= 0).to.be(true);
+        expect(circular.isCircular).to.be(true);
+
+        expect(circular.isLazyCircular).to.be(false);
+        expect(circular.isSingletonCircular).to.be(false);
+        expect(circular.lazyCircularPathways).to.eql([]);
+        expect(circular.singletonCircularPathways).to.eql([]);
     });
 
-    it(`prints an error message with path B -> C -> D -> B`, () => {
-        expect(containsDependencyTree(errorMessage, ['B', 'C', 'D', 'B'])).to.be(true);
+    it(`path is A -> B -> A`, () => {
+        expect(circular.circularPathways).to.eql([
+            [A, B, A]
+        ]);
     });
 });

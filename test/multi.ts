@@ -1,5 +1,5 @@
 import expect from "expect.js";
-import { type, dependency, inject, get } from "./shared/container";
+import { type, configureDependency, get } from "./shared/container";
 
 const IA = type<IA>();
 interface IA {
@@ -10,16 +10,20 @@ const IB = type<IB>();
 interface IB {
 }
 
-@dependency(IB)
 class C implements IB {
 }
 
-@dependency(IB)
+configureDependency()
+    .implements(IB)
+    .create(C);
+
 class D implements IB {
 }
 
-@dependency(IA)
-@inject(IB.multi)
+configureDependency()
+    .implements(IB)
+    .create(D);
+
 class A implements IA {
     private readonly bList: IB[];
 
@@ -31,6 +35,11 @@ class A implements IA {
         return this.bList;
     }
 }
+
+configureDependency()
+    .implements(IA)
+    .inject(IB.multi)
+    .create(A);
 
 describe(`Multi dependency injection`, () => {
     describe(`A -> B[] {C, D}`, () => {

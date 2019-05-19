@@ -1,9 +1,11 @@
 import { InjectedTypes, getInjectedArgsFromInjectedTuple, TypeInjected, InjectedClassFromInterface, NewableUserClass, Scope } from "./injection.types";
 import { createLazy } from "./lazy";
+import { Type } from "./type.types";
 
 export function createInjectedClass<UserClassType extends NewableUserClass>(ProvidedClass: UserClassType, providedScope: Scope | undefined, defaultScope: Scope, injectedTypes: InjectedTypes): InjectedClassFromInterface {
+    const scope: Scope = providedScope || defaultScope;
     return class InjectedClass extends ProvidedClass {
-        static scope: Scope = providedScope || defaultScope;
+        static scope: Scope = scope;
         static instance: InjectedClass;
         static userClass: NewableUserClass = ProvidedClass;
         static injectedTypes: InjectedTypes = injectedTypes;
@@ -11,11 +13,15 @@ export function createInjectedClass<UserClassType extends NewableUserClass>(Prov
         constructor(...args) {
             const dependencies = getInjectedArguments(injectedTypes);
             super(...dependencies, ...args);
-            if (providedScope === 'singleton' && !InjectedClass.instance) {
+            if (scope === 'singleton' && !InjectedClass.instance) {
                 InjectedClass.instance = this;
             }
         }
     };
+}
+
+export function get<Interface>(type: Type<Interface>, ...args: Array<any>): Interface {
+    return getSingle(type, 0, args);
 }
 
 function getInjectedArguments<InjectTuple extends InjectedTypes>(injectedTypes: InjectTuple): getInjectedArgsFromInjectedTuple<InjectTuple> {
@@ -44,7 +50,7 @@ function createDependencyGetter<I>(injectedType: TypeInjected<I>) {
     }
 }
 
-function getSingle<I>(injectedType: TypeInjected<I>, index: number, args: any[]): I {
+function getSingle<I>(injectedType: TypeInjected<I>, index: number, args: Array<any>): I {
     const implementation = injectedType.implementations[index];
     const instance = implementation.scope === 'singleton' && implementation.instance
         ? implementation.instance

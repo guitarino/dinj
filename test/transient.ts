@@ -1,6 +1,6 @@
 import { fake } from "sinon";
 import expect from "expect.js";
-import { type, dependency, inject, get } from "./shared/container";
+import { type, configureDependency, get } from "./shared/container";
 
 const IA = type<IA>();
 interface IA {
@@ -16,8 +16,6 @@ interface IC {
     getAfromC(): IA;
 }
 
-@dependency(IB)
-@inject(IA)
 class B implements IB {
     private readonly a: IA;
 
@@ -30,8 +28,11 @@ class B implements IB {
     }
 }
 
-@dependency(IC)
-@inject(IA)
+configureDependency()
+    .implements(IB)
+    .inject(IA)
+    .create(B);
+
 class C implements IC {
     private readonly a: IA;
 
@@ -44,14 +45,23 @@ class C implements IC {
     }
 }
 
+configureDependency()
+    .implements(IC)
+    .inject(IA)
+    .create(C);
+
 const aConstructorFake = fake();
 
-@dependency(IA.transient)
 class A implements IA {
     constructor() {
         aConstructorFake();
     }
 }
+
+configureDependency()
+    .implements(IA)
+    .scope('transient')
+    .create(A);
 
 describe(`Transient dependency registration`, () => {
     describe(`B -> A, C -> A`, () => {
